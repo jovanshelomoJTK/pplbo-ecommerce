@@ -9,6 +9,13 @@ COPY src /app/src
 # Beralih ke direktori aplikasi
 WORKDIR /app
 
+# Menambahkan perintah dos2unix untuk memastikan format baris Unix (LF)
+RUN apt-get update && apt-get install -y dos2unix
+RUN dos2unix gradlew
+
+# Menambahkan izin eksekusi untuk gradlew
+RUN chmod +x gradlew
+
 # Menjalankan gradle wrapper untuk membangun aplikasi
 RUN ./gradlew clean build -x test
 
