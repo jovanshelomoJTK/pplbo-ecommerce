@@ -11,74 +11,120 @@ services:
       POSTGRES_USER: your_username
       POSTGRES_PASSWORD: your_password
 
-  # API Gateway service
+  service-registry:
+    image: service-registry
+    build:
+      context: ./service-registry
+      dockerfile: Dockerfile
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://service-registry:8761/eureka/
+      - server.connection-timeout=60000
+    ports:
+      - "8761:8761"
+    networks:
+      - app-network
+
   api-gateway:
+    image: api-gateway
+    restart: on-failure
     build:
       context: ./api-gateway
       dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://service-registry:8761/eureka/
+      - server.connection-timeout=60000
     depends_on:
       - service-registry
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
 
-  # Cart Service
   cart-service:
+    image: cart-service
+    restart: on-failure
     build:
       context: ./cart-service
       dockerfile: Dockerfile
-    ports:
-      - "8081:8080"
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://service-registry:8761/eureka/
+      - server.connection-timeout=60000
     depends_on:
       - service-registry
       - postgres
+    ports:
+      - "8081:8081"
+    networks:
+      - app-network
 
-  # Order Service
   order-service:
+    image: order-service
+    restart: on-failure
     build:
       context: ./order-service
       dockerfile: Dockerfile
-    ports:
-      - "8082:8080"
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://service-registry:8761/eureka/
+      - server.connection-timeout=60000
     depends_on:
       - service-registry
       - postgres
+    ports:
+      - "8082:8082"
+    networks:
+      - app-network
 
-  # Payment Service
   payment-service:
+    image: payment-service
+    restart: on-failure
     build:
       context: ./payment-service
       dockerfile: Dockerfile
-    ports:
-      - "8083:8080"
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://service-registry:8761/eureka/
+      - server.connection-timeout=60000
     depends_on:
       - service-registry
       - postgres
+    ports:
+      - "8083:8083"
+    networks:
+      - app-network
 
-  # Product Service
   product-service:
+    image: product-service
+    restart: on-failure
     build:
       context: ./product-service
       dockerfile: Dockerfile
-    ports:
-      - "8084:8080"
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://service-registry:8761/eureka/
+      - server.connection-timeout=60000
     depends_on:
       - service-registry
       - postgres
+    ports:
+      - "8084:8084"
+    networks:
+      - app-network
 
-  # Promotion Service
   promotion-service:
+    image: promotion-service
+    restart: on-failure
     build:
       context: ./promotion-service
       dockerfile: Dockerfile
-    ports:
-      - "8085:8080"
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://service-registry:8761/eureka/
+      - server.connection-timeout=60000
     depends_on:
       - service-registry
       - postgres
-
-  # Service Registry
-  service-registry:
-    image: springcloud/eureka
-    container_name: service-registry
     ports:
-      - "8761:8761"
+      - "8085:8085"
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
