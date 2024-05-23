@@ -1,10 +1,84 @@
 version: '3.7'
-name: pplbo-ecommerce
 services:
-  # database for all services
+  # Database for all services
   postgres:
     image: postgres:12
     container_name: postgres
     ports:
       - "5432:5432"
     environment:
+      POSTGRES_DB: your_database_name
+      POSTGRES_USER: your_username
+      POSTGRES_PASSWORD: your_password
+
+  # API Gateway service
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - service-registry
+
+  # Cart Service
+  cart-service:
+    build:
+      context: ./cart-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8080"
+    depends_on:
+      - service-registry
+      - postgres
+
+  # Order Service
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8080"
+    depends_on:
+      - service-registry
+      - postgres
+
+  # Payment Service
+  payment-service:
+    build:
+      context: ./payment-service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8080"
+    depends_on:
+      - service-registry
+      - postgres
+
+  # Product Service
+  product-service:
+    build:
+      context: ./product-service
+      dockerfile: Dockerfile
+    ports:
+      - "8084:8080"
+    depends_on:
+      - service-registry
+      - postgres
+
+  # Promotion Service
+  promotion-service:
+    build:
+      context: ./promotion-service
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8080"
+    depends_on:
+      - service-registry
+      - postgres
+
+  # Service Registry
+  service-registry:
+    image: springcloud/eureka
+    container_name: service-registry
+    ports:
+      - "8761:8761"
