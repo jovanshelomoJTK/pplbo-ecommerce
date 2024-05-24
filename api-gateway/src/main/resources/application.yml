@@ -1,0 +1,42 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: cart-service
+          uri: lb://cart-service
+          predicates:
+            - Path=/cart/**
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/order/**
+        - id: payment-service
+          uri: lb://payment-service
+          predicates:
+            - Path=/payment/**
+        - id: product-service
+          uri: lb://product-service
+          predicates:
+            - Path=/product/**
+        - id: promotion-service
+          uri: lb://promotion-service
+          predicates:
+            - Path=/promotion/**
+      globalcors:
+        corsConfigurations:
+          "[/**]":
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders:
+              - "*"
+            allowCredentials: true

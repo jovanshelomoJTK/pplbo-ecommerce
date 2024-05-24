@@ -1,130 +1,179 @@
-version: '3.7'
+name: pplbo-ecommerce
 services:
   # Database for all services
-  postgres:
+  db:
     image: postgres:15
-    container_name: postgres
+    restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT}:5432"
+    expose:
+      - "5432"
+    volumes:
+      - ./database/init:/docker-entrypoint-initdb.d
+      - pplbo-volume:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: your_database_name
-      POSTGRES_USER: your_username
-      POSTGRES_PASSWORD: your_password
+      POSTGRES_MULTIPLE_DATABASES: cart,order,payment,product,promotion
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    networks:
+      - pplbo-network
 
   service-registry:
     image: service-registry
     build:
       context: ./service-registry
-      dockerfile: Dockerfile
     environment:
       - eureka.client.serviceUrl.defaultZone=http://service-registry:8761/eureka/
       - server.connection-timeout=60000
+      - eureka.client.fetch-registry=false
+      - eureka.client.register-with-eureka=false
     ports:
       - "8761:8761"
     networks:
-      - app-network
+      - pplbo-network
 
   api-gateway:
     image: api-gateway
-    restart: on-failure
+    restart: unless-stopped
     build:
       context: ./api-gateway
-      dockerfile: Dockerfile
     environment:
       - eureka.client.serviceUrl.defaultZone=http://service-registry:8761/eureka/
       - server.connection-timeout=60000
+      - eureka.client.fetch-registry=true
+      - eureka.client.register-with-eureka=true
     depends_on:
       - service-registry
     ports:
       - "8080:8080"
     networks:
-      - app-network
+      - pplbo-network
 
   cart-service:
     image: cart-service
-    restart: on-failure
+    restart: unless-stopped
     build:
       context: ./cart-service
-      dockerfile: Dockerfile
     environment:
       - eureka.client.serviceUrl.defaultZone=http://service-registry:8761/eureka/
       - server.connection-timeout=60000
+      - eureka.client.fetch-registry=true
+      - eureka.client.register-with-eureka=true
+      - database.url=jdbc:postgresql://db:5432/cart
+      - database.username=${POSTGRES_USER}
+      - database.password=${POSTGRES_PASSWORD}
     depends_on:
       - service-registry
-      - postgres
+      - db
     ports:
-      - "8081:8081"
+      - "8081:8080"
     networks:
-      - app-network
+      - pplbo-network
 
   order-service:
     image: order-service
-    restart: on-failure
+    restart: unless-stopped
     build:
       context: ./order-service
-      dockerfile: Dockerfile
     environment:
       - eureka.client.serviceUrl.defaultZone=http://service-registry:8761/eureka/
       - server.connection-timeout=60000
+      - eureka.client.fetch-registry=true
+      - eureka.client.register-with-eureka=true
+      - database.url=jdbc:postgresql://db:5432/order
+      - database.username=${POSTGRES_USER}
+      - database.password=${POSTGRES_PASSWORD}
     depends_on:
       - service-registry
-      - postgres
+      - db
     ports:
-      - "8082:8082"
+      - "8082:8080"
     networks:
-      - app-network
+      - pplbo-network
 
   payment-service:
     image: payment-service
-    restart: on-failure
+    restart: unless-stopped
     build:
       context: ./payment-service
-      dockerfile: Dockerfile
     environment:
       - eureka.client.serviceUrl.defaultZone=http://service-registry:8761/eureka/
       - server.connection-timeout=60000
+      - eureka.client.fetch-registry=true
+      - eureka.client.register-with-eureka=true
+      - database.url=jdbc:postgresql://db:5432/payment
+      - database.username=${POSTGRES_USER}
+      - database.password=${POSTGRES_PASSWORD}
     depends_on:
       - service-registry
-      - postgres
+      - db
     ports:
-      - "8083:8083"
+      - "8083:8080"
     networks:
-      - app-network
+      - pplbo-network
 
   product-service:
     image: product-service
-    restart: on-failure
+    restart: unless-stopped
     build:
       context: ./product-service
-      dockerfile: Dockerfile
     environment:
       - eureka.client.serviceUrl.defaultZone=http://service-registry:8761/eureka/
       - server.connection-timeout=60000
+      - eureka.client.fetch-registry=true
+      - eureka.client.register-with-eureka=true
+      - database.url=jdbc:postgresql://db:5432/product
+      - database.username=${POSTGRES_USER}
+      - database.password=${POSTGRES_PASSWORD}
     depends_on:
       - service-registry
-      - postgres
+      - db
     ports:
-      - "8084:8084"
+      - "8084:8080"
     networks:
-      - app-network
+      - pplbo-network
 
   promotion-service:
     image: promotion-service
-    restart: on-failure
+    restart: unless-stopped
     build:
       context: ./promotion-service
-      dockerfile: Dockerfile
     environment:
       - eureka.client.serviceUrl.defaultZone=http://service-registry:8761/eureka/
       - server.connection-timeout=60000
+      - eureka.client.fetch-registry=true
+      - eureka.client.register-with-eureka=true
+      - database.url=jdbc:postgresql://db:5432/promotion
+      - database.username=${POSTGRES_USER}
+      - database.password=${POSTGRES_PASSWORD}
     depends_on:
       - service-registry
-      - postgres
+      - db
     ports:
-      - "8085:8085"
+      - "8085:8080"
     networks:
-      - app-network
+      - pplbo-network
+
+  # this container supposed to be off after the migration finished
+  # so don't worry if you see it off after several seconds
+  flyway:
+    image: flyway/flyway
+    entrypoint: ["bash"]
+    command: >
+      -c "/flyway/flyway -url=jdbc:postgresql://db:5432/cart -user=${POSTGRES_USER} -password=${POSTGRES_PASSWORD} -locations=filesystem:/flyway/sql/cart -connectRetries=10 migrate && 
+      /flyway/flyway -url=jdbc:postgresql://db:5432/order -user=${POSTGRES_USER} -password=${POSTGRES_PASSWORD} -locations=filesystem:/flyway/sql/order -connectRetries=10 migrate && 
+      /flyway/flyway -url=jdbc:postgresql://db:5432/payment -user=${POSTGRES_USER} -password=${POSTGRES_PASSWORD} -locations=filesystem:/flyway/sql/payment -connectRetries=10 migrate && 
+      /flyway/flyway -url=jdbc:postgresql://db:5432/product -user=${POSTGRES_USER} -password=${POSTGRES_PASSWORD} -locations=filesystem:/flyway/sql/product -connectRetries=10 migrate && 
+      /flyway/flyway -url=jdbc:postgresql://db:5432/promotion -user=${POSTGRES_USER} -password=${POSTGRES_PASSWORD} -locations=filesystem:/flyway/sql/promotion -connectRetries=10 migrate"
+    volumes:
+      - ./database/migrations:/flyway/sql
+    depends_on:
+      - db
+    networks:
+      - pplbo-network
 
 networks:
-  app-network:
-    driver: bridge
+  pplbo-network:
+
+volumes:
+  pplbo-volume:
