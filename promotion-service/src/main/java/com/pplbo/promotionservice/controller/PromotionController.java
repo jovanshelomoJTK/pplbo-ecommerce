@@ -1,53 +1,57 @@
-package com.pplbo.promotionservice.service;
+package com.pplbo.promotionservice.controller;
 
+import com.pplbo.promotionservice.model.Promotion;
+import com.pplbo.promotionservice.service.PromotionService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Date;
 import java.util.List;
 
 @RestController
 @RequestMapping("/promotions")
 public class PromotionController {
+
+    @Autowired
     private PromotionService promotionService;
 
     @PostMapping
-    public void createPromotion(@RequestBody Promotion promotion){
-        System.out.println("Hello World from createPromotion endpoint");
+    public Promotion createPromotion(@RequestBody Promotion promotion) {
+        promotionService.createPromotion(promotion);
+        return promotion;
     }
 
-    @PutMapping
-    public void updatePromotion(@RequestBody Promotion promotion){
-        System.out.println("Hello World from updatePromotion endpoint");
-    }
-
-    @DeleteMapping
-    public void deletePromotion(@RequestParam int id){
-        System.out.println("Hello World from deletePromotion endpoint");
+    @GetMapping("/{id}")
+    public Promotion getPromotionById(@PathVariable int id) {
+        return promotionService.getPromotionById(id);
     }
 
     @GetMapping
-    public List<Promotion> getAllPromotions(){
-        System.out.println("Hello World from getAllPromotions endpoint");
-        return null; // Dummy return, actual implementation required
+    public List<Promotion> getAllActivePromotions() {
+        return promotionService.getAllActivePromotion();
     }
 
-    @PostMapping("/product/{productID}")
-    public void addProductToPromotion(@PathVariable int productID, @RequestBody Promotion promotion){
-        System.out.println("Hello World from addProductToPromotion endpoint");
+    @DeleteMapping("/{id}")
+    public void deletePromotion(@PathVariable int id) {
+        promotionService.deletePromotion(id);
     }
 
-    @DeleteMapping("/product/{productID}")
-    public void removeProductFromPromotion(@PathVariable int productID, @RequestBody Promotion promotion){
-        System.out.println("Hello World from removeProductFromPromotion endpoint");
+    @PostMapping("/{id}/product")
+    public void addProductToPromotion(@PathVariable int id, @RequestBody Product product) {
+        promotionService.addProductToPromotion(id, product);
     }
 
-    @PutMapping("/schedule/{productID}")
-    public void schedulePromotion(@PathVariable int productID, @RequestParam Date startDate, @RequestParam Date endDate){
-        System.out.println("Hello World from schedulePromotion endpoint");
+    @DeleteMapping("/product/{id}")
+    public void removeProductFromPromotion(@PathVariable int id) {
+        promotionService.removeProductFromPromotion(id);
     }
 
-    @PostMapping("/order/{orderID}")
-    public void applyPromotionToOrder(@PathVariable int orderID, @RequestBody Order order){
-        System.out.println("Hello World from applyPromotionToOrder endpoint");
+    @PostMapping("/{id}/applyFreeShipping")
+    public void applyFreeShipping(@PathVariable int id, @RequestBody Order order) {
+        promotionService.applyFreeShipping(id, order);
+    }
+
+    @PostMapping("/{id}/schedule")
+    public void schedulePromotion(@PathVariable int id, @RequestParam Date startDate, @RequestParam Date endDate) {
+        promotionService.schedulePromotion(id, startDate, endDate);
     }
 }
