@@ -8,19 +8,20 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface PromotionRepository extends JpaRepository<Promotion, Long> {
+public interface PromotionRepository extends JpaRepository<Promotion, int> {
 
     @Override
     <S extends Promotion> S save(S entity);
 
     @Override
-    Optional<Promotion> findById(Long id);
+    Optional<Promotion> findById(int id);
 
+    List<Promotion> findAll();
 
     List<Promotion> findAllByStatus(String status);
 
     @Override
-    void deleteById(Long id);
+    void deleteById(int id);
 
     // Method untuk update by id
     default void updateById(Long id, Promotion newPromotion) {

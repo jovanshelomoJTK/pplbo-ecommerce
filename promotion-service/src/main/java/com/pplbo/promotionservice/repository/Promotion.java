@@ -12,8 +12,12 @@ public abstract class Promotion {
     private Date startDate;
     private Date endDate;
     private PromotionStatus status;
+    private PromotionType type;
+    private List<Product> products;
 
     public abstract void applyPromotion(Product product);
 
     public abstract void applyPromotion(Order order);
+
+    public abstract void removeProduct(Product product);
 }
