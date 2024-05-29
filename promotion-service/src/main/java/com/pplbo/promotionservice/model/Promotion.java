@@ -4,8 +4,12 @@ import java.util.Date;
 import java.util.List;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,36 +26,40 @@ import com.pplbo.promotionservice.service.PromotionType;
 @Table(name = "Promotion")
 public class Promotion {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id_promotion;
-    
+
     @Column(nullable = true)
     private Date startDate;
-    
+
     @Column(nullable = true)
     private Date endDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private PromotionStatus status;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private PromotionType type;
+
     private double discountPercentage;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinTable(
-        name = "promotion_products",
-        joinColumns = @JoinColumn(name = "promotion_id"),
-        inverseJoinColumns = @JoinColumn(name = "product_id")
-    )
-    private List<Product> products;
+    @ElementCollection
+    @CollectionTable(name = "promotion_products", joinColumns = @JoinColumn(name = "promotion_id"))
+    @Column(name = "product_id")
+    private List<Long> productIds;
 
     public Promotion() {
     }
 
-    public Promotion(Long id_promotion, Date startDate, Date endDate, PromotionStatus status, PromotionType type, List<Product> products, double discountPercentage) {
+    public Promotion(Long id_promotion, Date startDate, Date endDate, PromotionStatus status, PromotionType type, List<Long> productIds, double discountPercentage) {
         this.id_promotion = id_promotion;
         this.startDate = startDate;
         this.endDate = endDate;
         this.status = status;
         this.type = type;
-        this.products = products;
+        this.productIds = productIds;
         this.discountPercentage = discountPercentage;
     }
 
@@ -95,12 +103,12 @@ public class Promotion {
         this.type = type;
     }
 
-    public List<Product> getProducts() {
-        return products;
+    public List<Long> getProductIds() {
+        return productIds;
     }
 
-    public void setProducts(List<Product> products) {
-        this.products = products;
+    public void setProductIds(List<Long> productIds) {
+        this.productIds = productIds;
     }
 
     public double getDiscountPercentage() {
@@ -111,17 +119,11 @@ public class Promotion {
         this.discountPercentage = discountPercentage;
     }
 
-    public void applyPromotion(Product product) {
-        getProducts().add(product);
-        double originalPrice = product.getPrice();
-        double discountedPrice = originalPrice - (originalPrice * (discountPercentage / 100));
-        product.setPrice(discountedPrice);
+    public void applyPromotion(Long productId) {
+        getProductIds().add(productId);
     }
 
-    public void removeProduct(Product product) {
-        getProducts().remove(product);
-        double discountedPrice = product.getPrice();
-        double originalPrice = discountedPrice / (1 - (discountPercentage / 100));
-        product.setPrice(originalPrice);
+    public void removeProduct(Long productId) {
+        getProductIds().remove(productId);
     }
 }

@@ -1,6 +1,5 @@
 package com.pplbo.promotionservice.controller;
 
-import com.pplbo.promotionservice.model.Product;
 import com.pplbo.promotionservice.model.Promotion;
 import com.pplbo.promotionservice.service.PromotionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -24,7 +24,8 @@ public class PromotionController {
             promotionService.createPromotion(promotion);
             return new ResponseEntity<>(promotion, HttpStatus.CREATED);
         } catch (Exception e) {
-            return new ResponseEntity<>("Failed to create promotion: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Failed to create promotion: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -50,42 +51,42 @@ public class PromotionController {
             promotionService.deletePromotion(id);
             return new ResponseEntity<>("Promotion deleted successfully", HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>("Failed to delete promotion: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Failed to delete promotion: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @PostMapping("/{id}/product")
-    public ResponseEntity<?> addProductToPromotion(@PathVariable Long id, @RequestBody Product product) {
+    @PostMapping("/{id}/product/{productId}")
+    public ResponseEntity<?> addProductToPromotion(@PathVariable Long id, @PathVariable Long productId) {
         try {
-            promotionService.addProductToPromotion(id, product);
+            promotionService.addProductToPromotion(id, productId);
             return new ResponseEntity<>("Product added to promotion successfully", HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>("Failed to add product to promotion: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Failed to add product to promotion: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @DeleteMapping("/product/{id}")
-    public ResponseEntity<?> removeProductFromPromotion(@PathVariable Long id) {
+    @DeleteMapping("/{id}/product/{productId}")
+    public ResponseEntity<?> removeProductFromPromotion(@PathVariable Long id, @PathVariable Long productId) {
         try {
-            promotionService.removeProductFromPromotion(id);
+            promotionService.removeProductFromPromotion(id, productId);
             return new ResponseEntity<>("Product removed from promotion successfully", HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>("Failed to remove product from promotion: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Failed to remove product from promotion: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    // @PostMapping("/{id}/applyFreeShipping")
-    // public void applyFreeShipping(@PathVariable Long id, @RequestBody Order order) {
-    //     promotionService.applyFreeShipping(id, order);
-    // }
-
     @PostMapping("/schedule/{id}")
-    public ResponseEntity<?> schedulePromotion(@PathVariable Long id, @RequestParam Date startDate, @RequestParam Date endDate) {
+    public ResponseEntity<?> schedulePromotion(@PathVariable Long id, @RequestParam Date startDate,
+            @RequestParam Date endDate) {
         try {
             promotionService.schedulePromotion(id, startDate, endDate);
             return new ResponseEntity<>("Promotion scheduled successfully", HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>("Failed to schedule promotion: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Failed to schedule promotion: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

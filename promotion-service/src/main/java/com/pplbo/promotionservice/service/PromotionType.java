@@ -4,5 +4,3 @@ public enum PromotionType {
     DISCOUNT,
     FREESHIPPING
 }
-
-

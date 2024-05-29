@@ -5,5 +5,3 @@ public enum PromotionStatus {
     ACTIVE,
     EXPIRED
 }
-
-
