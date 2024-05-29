@@ -21,7 +21,7 @@ public class PaymentController {
         return ResponseEntity.ok(createdPayment);
     }
 
-    @PutMapping("/{id}/status")
+    @PutMapping("/{id}")
     public ResponseEntity<Payment> updatePaymentStatus(@PathVariable Long id) {
         Payment updatedPayment = paymentService.updatePaymentStatus(id);
         return ResponseEntity.ok(updatedPayment);
@@ -44,12 +44,12 @@ public class PaymentController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePayment(@PathVariable Long id) {
+    public ResponseEntity<String> deletePayment(@PathVariable Long id) {
         boolean deleted = paymentService.deletePayment(id);
         if (deleted) {
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.ok("Payment deleted successfully.");
         } else {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(404).body("Payment not found.");
         }
     }
 }
