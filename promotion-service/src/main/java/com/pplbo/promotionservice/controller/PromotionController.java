@@ -78,6 +78,12 @@ public class PromotionController {
         }
     }
 
+    // @PostMapping("/{id}/applyFreeShipping")
+    // public void applyFreeShipping(@PathVariable Long id, @RequestBody Order
+    // order) {
+    // promotionService.applyFreeShipping(id, order);
+    // }
+
     @PostMapping("/schedule/{id}")
     public ResponseEntity<?> schedulePromotion(@PathVariable Long id, @RequestParam Date startDate,
             @RequestParam Date endDate) {

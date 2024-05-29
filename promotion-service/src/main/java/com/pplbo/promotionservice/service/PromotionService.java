@@ -74,6 +74,14 @@ public class PromotionService {
         }
     }
 
+    // @Transactional
+    // public void applyFreeShipping(Long id, Order order){
+    //     Promotion promotion = getPromotionById(id);
+    //     if (promotion != null) {
+    //         order.setFeeShipping(0);
+    //     }
+    // }
+
     @Transactional
     public void schedulePromotion(Long id, Date startDate, Date endDate) {
         Promotion promotion = getPromotionById(id);
