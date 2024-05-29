@@ -1,11 +1,13 @@
-package com.pplbo.promotionservice.service;
+package com.pplbo.promotionservice.event;
 
 import org.springframework.context.ApplicationEvent;
 
-public class FreeShippingPromotionCreated implements ApplicationEvent {
+import com.pplbo.promotionservice.model.Promotion;
+
+public class DiscountPromotionCreated extends ApplicationEvent {
     private final Promotion promotion;
 
-    public FreeShippingPromotionCreated(Object source, Promotion promotion) {
+    public DiscountPromotionCreated(Object source, Promotion promotion) {
         super(source);
         this.promotion = promotion;
     }

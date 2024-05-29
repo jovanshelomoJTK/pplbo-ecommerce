@@ -1,10 +1,14 @@
 package com.pplbo.promotionservice.controller;
 
+import com.pplbo.promotionservice.model.Product;
 import com.pplbo.promotionservice.model.Promotion;
 import com.pplbo.promotionservice.service.PromotionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -15,43 +19,73 @@ public class PromotionController {
     private PromotionService promotionService;
 
     @PostMapping
-    public Promotion createPromotion(@RequestBody Promotion promotion) {
-        promotionService.createPromotion(promotion);
-        return promotion;
+    public ResponseEntity<?> createPromotion(@RequestBody Promotion promotion) {
+        try {
+            promotionService.createPromotion(promotion);
+            return new ResponseEntity<>(promotion, HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to create promotion: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping("/{id}")
-    public Promotion getPromotionById(@PathVariable int id) {
-        return promotionService.getPromotionById(id);
+    public ResponseEntity<?> getPromotionById(@PathVariable Long id) {
+        Promotion promotion = promotionService.getPromotionById(id);
+        if (promotion != null) {
+            return new ResponseEntity<>(promotion, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>("Promotion not found", HttpStatus.NOT_FOUND);
+        }
     }
 
     @GetMapping
-    public List<Promotion> getAllActivePromotions() {
-        return promotionService.getAllActivePromotion();
+    public ResponseEntity<List<Promotion>> getAllActivePromotions() {
+        List<Promotion> promotions = promotionService.getAllActivePromotion();
+        return new ResponseEntity<>(promotions, HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public void deletePromotion(@PathVariable int id) {
-        promotionService.deletePromotion(id);
+    public ResponseEntity<?> deletePromotion(@PathVariable Long id) {
+        try {
+            promotionService.deletePromotion(id);
+            return new ResponseEntity<>("Promotion deleted successfully", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to delete promotion: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PostMapping("/{id}/product")
-    public void addProductToPromotion(@PathVariable int id, @RequestBody Product product) {
-        promotionService.addProductToPromotion(id, product);
+    public ResponseEntity<?> addProductToPromotion(@PathVariable Long id, @RequestBody Product product) {
+        try {
+            promotionService.addProductToPromotion(id, product);
+            return new ResponseEntity<>("Product added to promotion successfully", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to add product to promotion: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @DeleteMapping("/product/{id}")
-    public void removeProductFromPromotion(@PathVariable int id) {
-        promotionService.removeProductFromPromotion(id);
+    public ResponseEntity<?> removeProductFromPromotion(@PathVariable Long id) {
+        try {
+            promotionService.removeProductFromPromotion(id);
+            return new ResponseEntity<>("Product removed from promotion successfully", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to remove product from promotion: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    @PostMapping("/{id}/applyFreeShipping")
-    public void applyFreeShipping(@PathVariable int id, @RequestBody Order order) {
-        promotionService.applyFreeShipping(id, order);
-    }
+    // @PostMapping("/{id}/applyFreeShipping")
+    // public void applyFreeShipping(@PathVariable Long id, @RequestBody Order order) {
+    //     promotionService.applyFreeShipping(id, order);
+    // }
 
-    @PostMapping("/{id}/schedule")
-    public void schedulePromotion(@PathVariable int id, @RequestParam Date startDate, @RequestParam Date endDate) {
-        promotionService.schedulePromotion(id, startDate, endDate);
+    @PostMapping("/schedule/{id}")
+    public ResponseEntity<?> schedulePromotion(@PathVariable Long id, @RequestParam Date startDate, @RequestParam Date endDate) {
+        try {
+            promotionService.schedulePromotion(id, startDate, endDate);
+            return new ResponseEntity<>("Promotion scheduled successfully", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to schedule promotion: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

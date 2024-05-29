@@ -1,4 +1,4 @@
-package com.pplbo.promotionservice.repository;
+package com.pplbo.promotionservice.service;
 
 public enum PromotionStatus {
     INACTIVE,

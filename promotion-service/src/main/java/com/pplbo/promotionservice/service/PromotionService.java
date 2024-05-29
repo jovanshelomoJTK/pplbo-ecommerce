@@ -1,12 +1,23 @@
 package com.pplbo.promotionservice.service;
 
-import com.pplbo.promotionservice.event.DiscountPromotionCreated;
-import com.pplbo.promotionservice.event.FreeShippingPromotionCreated;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.pplbo.promotionservice.event.DiscountPromotionCreated;
+import com.pplbo.promotionservice.event.FreeShippingPromotionCreated;
+import com.pplbo.promotionservice.model.Product;
+import com.pplbo.promotionservice.model.Promotion;
+import com.pplbo.promotionservice.repository.ProductRepository;
+import com.pplbo.promotionservice.repository.PromotionRepository;
+
+@Service
 public class PromotionService {
 
     @Autowired
@@ -16,19 +27,19 @@ public class PromotionService {
     private  PromotionRepository promotionRepository;
 
     @Autowired
-    private Product product;
+    private  ProductRepository productRepository;
 
     @Transactional
     public void createPromotion(Promotion promotion){
         promotionRepository.save(promotion);
-        if (promotion.type==PromotionType.FREESHIPPING) {
+        if (promotion.getType()==PromotionType.FREESHIPPING) {
             eventPublisher.publishEvent(new FreeShippingPromotionCreated(this, promotion));
-        } else if (promotion.type==PromotionType.DISCOUNT) {
+        } else if (promotion.getType()==PromotionType.DISCOUNT) {
             eventPublisher.publishEvent(new DiscountPromotionCreated(this, promotion));
         }
     }
 
-    public Promotion getPromotionById(int id){
+    public Promotion getPromotionById(Long id){
         Optional<Promotion> promotion = promotionRepository.findById(id);
         return promotion.orElse(null);
     }
@@ -38,12 +49,12 @@ public class PromotionService {
     }
 
     @Transactional
-    public void deletePromotion(int id){
+    public void deletePromotion(Long id){
         promotionRepository.deleteById(id);
     }
 
     @Transactional
-    public void addProductToPromotion(int id, Product product) {
+    public void addProductToPromotion(Long id, Product product) {
         Promotion promotion = getPromotionById(id);
         if (promotion != null) {
             promotion.applyPromotion(product);
@@ -52,7 +63,7 @@ public class PromotionService {
     }
 
     @Transactional
-    public void removeProductFromPromotion(int id_product){
+    public void removeProductFromPromotion(Long id_product){
         Optional<Product> productOpt = productRepository.findById(id_product);
         if (productOpt.isPresent()) {
             Product product = productOpt.get();
@@ -66,16 +77,16 @@ public class PromotionService {
         }
     }
 
-    @Transactional
-    public void applyFreeShipping(int id, Order order){
-        Promotion promotion = getPromotionById(id);
-        if (promotion != null) {
-            order.setFeeShipping(0);
-        }
-    }
+    // @Transactional
+    // public void applyFreeShipping(Long id, Order order){
+    //     Promotion promotion = getPromotionById(id);
+    //     if (promotion != null) {
+    //         order.setFeeShipping(0);
+    //     }
+    // }
 
     @Transactional
-    public void schedulePromotion(int id, Date startDate, Date endDate) {
+    public void schedulePromotion(Long id, Date startDate, Date endDate) {
         Promotion promotion = getPromotionById(id);
         if (promotion != null) {
             promotion.setStartDate(startDate);
@@ -84,7 +95,7 @@ public class PromotionService {
         }
     }
 
-    public void updateStatusExpiredPromotion(int id) {
+    public void updateStatusExpiredPromotion(Long id) {
         Promotion promotion = getPromotionById(id);
         if (promotion != null && promotion.getEndDate().before(new Date())) {
             promotion.setStatus(PromotionStatus.EXPIRED);
@@ -93,11 +104,29 @@ public class PromotionService {
     }
 
     @Scheduled(fixedRate = 3600000)
+    @Transactional
+    public void updateActivePromotions() {
+        List<Promotion> promotions = promotionRepository.findAll();
+        Date currentDate = new Date();
+
+        for (Promotion promotion : promotions) {
+            if (promotion.getStartDate() != null && promotion.getStartDate().compareTo(currentDate) <= 0 &&
+                !PromotionStatus.ACTIVE.equals(promotion.getStatus())) {
+                promotion.setStatus(PromotionStatus.ACTIVE);
+                promotionRepository.save(promotion);
+            }
+        }
+    }
+
+    @Scheduled(fixedRate = 3600000)
+    @Transactional
     public void updateExpiredPromotions() {
         List<Promotion> promotions = promotionRepository.findAll();
+        Date currentDate = new Date();
+
         for (Promotion promotion : promotions) {
-            Promotion promotion = getPromotionById(promotion.getId);
-            if (promotion.getEndDate().before(new Date())) {
+            if (promotion.getEndDate() != null && promotion.getEndDate().compareTo(currentDate) < 0 &&
+                !PromotionStatus.EXPIRED.equals(promotion.getStatus())) {
                 promotion.setStatus(PromotionStatus.EXPIRED);
                 promotionRepository.save(promotion);
             }
