@@ -45,7 +45,7 @@ public class Promotion {
 
     private double discountPercentage;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "promotion_products", joinColumns = @JoinColumn(name = "promotion_id"))
     @Column(name = "product_id")
     private List<Long> productIds;
