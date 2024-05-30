@@ -3,7 +3,6 @@ package com.pplbo.promotionservice.model;
 import java.util.Date;
 import java.util.List;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -15,10 +14,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 
+import com.pplbo.promotionservice.controller.CreatePromotionRequest;
 import com.pplbo.promotionservice.service.PromotionStatus;
 import com.pplbo.promotionservice.service.PromotionType;
 
@@ -43,6 +41,7 @@ public class Promotion {
     @Column(nullable = false)
     private PromotionType type;
 
+    @Column(nullable = true)
     private double discountPercentage;
 
     @ElementCollection(fetch = FetchType.LAZY)
@@ -125,5 +124,16 @@ public class Promotion {
 
     public void removeProduct(Long productId) {
         getProductIds().remove(productId);
+    }
+
+    public static Promotion fromRequest(CreatePromotionRequest request) {
+        Promotion promotion = new Promotion();
+        promotion.setStartDate(request.getStartDate());
+        promotion.setEndDate(request.getEndDate());
+        promotion.setStatus(request.getStatus());
+        promotion.setType(request.getType());
+        promotion.setDiscountPercentage(request.getDiscountPercentage());
+        promotion.setProductIds(request.getProductIds());
+        return promotion;
     }
 }

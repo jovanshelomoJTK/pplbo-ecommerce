@@ -3,6 +3,7 @@ package com.pplbo.promotionservice.controller;
 import com.pplbo.promotionservice.model.Promotion;
 import com.pplbo.promotionservice.service.PromotionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,10 +20,11 @@ public class PromotionController {
     private PromotionService promotionService;
 
     @PostMapping
-    public ResponseEntity<?> createPromotion(@RequestBody Promotion promotion) {
+    public ResponseEntity<?> createPromotion(@RequestBody CreatePromotionRequest request) {
         try {
-            promotionService.createPromotion(promotion);
-            return new ResponseEntity<>(promotion, HttpStatus.CREATED);
+            Promotion promotion = Promotion.fromRequest(request);
+            Promotion savedPromotion = promotionService.createPromotion(promotion);
+            return new ResponseEntity<>(savedPromotion, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>("Failed to create promotion: " + e.getMessage(),
                     HttpStatus.INTERNAL_SERVER_ERROR);
@@ -59,8 +61,8 @@ public class PromotionController {
     @PostMapping("/{id}/product/{productId}")
     public ResponseEntity<?> addProductToPromotion(@PathVariable Long id, @PathVariable Long productId) {
         try {
-            promotionService.addProductToPromotion(id, productId);
-            return new ResponseEntity<>("Product added to promotion successfully", HttpStatus.OK);
+            Promotion savedPromotion = promotionService.addProductToPromotion(id, productId);
+            return new ResponseEntity<>(savedPromotion, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Failed to add product to promotion: " + e.getMessage(),
                     HttpStatus.INTERNAL_SERVER_ERROR);
@@ -70,8 +72,8 @@ public class PromotionController {
     @DeleteMapping("/{id}/product/{productId}")
     public ResponseEntity<?> removeProductFromPromotion(@PathVariable Long id, @PathVariable Long productId) {
         try {
-            promotionService.removeProductFromPromotion(id, productId);
-            return new ResponseEntity<>("Product removed from promotion successfully", HttpStatus.OK);
+            Promotion savedPromotion = promotionService.removeProductFromPromotion(id, productId);
+            return new ResponseEntity<>(savedPromotion, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Failed to remove product from promotion: " + e.getMessage(),
                     HttpStatus.INTERNAL_SERVER_ERROR);
@@ -85,11 +87,12 @@ public class PromotionController {
     // }
 
     @PostMapping("/schedule/{id}")
-    public ResponseEntity<?> schedulePromotion(@PathVariable Long id, @RequestParam Date startDate,
-            @RequestParam Date endDate) {
+    public ResponseEntity<?> schedulePromotion(@PathVariable Long id,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {
         try {
-            promotionService.schedulePromotion(id, startDate, endDate);
-            return new ResponseEntity<>("Promotion scheduled successfully", HttpStatus.OK);
+            Promotion savedPromotion = promotionService.schedulePromotion(id, startDate, endDate);
+            return new ResponseEntity<>(savedPromotion, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Failed to schedule promotion: " + e.getMessage(),
                     HttpStatus.INTERNAL_SERVER_ERROR);

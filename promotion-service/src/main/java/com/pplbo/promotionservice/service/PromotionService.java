@@ -29,8 +29,9 @@ public class PromotionService {
     private final String productServiceUrl = "http://8084/product";
 
     @Transactional
-    public void createPromotion(Promotion promotion) {
-        promotionRepository.save(promotion);
+    public Promotion createPromotion(Promotion promotion) {
+        Promotion savedPromotion = promotionRepository.save(promotion);
+        return savedPromotion;
     }
 
     public Promotion getPromotionById(Long id) {
@@ -49,7 +50,7 @@ public class PromotionService {
     }
 
     @Transactional
-    public void addProductToPromotion(Long id, Long productId) {
+    public Promotion addProductToPromotion(Long id, Long productId) {
         if (isValidProduct(productId)) {
             Promotion promotion = getPromotionById(id);
             if (promotion != null) {
@@ -58,20 +59,25 @@ public class PromotionService {
                 if (promotion.getStartDate() == null || promotion.getStartDate().compareTo(new Date()) <= 0) {
                     eventPublisher.publishEvent(new DiscountPromotionActivatedEvent(this, promotion));
                 }
+                return promotion;
             }
+            throw new IllegalArgumentException("Promotion not found for id: " + id);
         } else {
             throw new IllegalArgumentException("Invalid product ID");
         }
     }
 
     @Transactional
-    public void removeProductFromPromotion(Long id, Long productId) {
+    public Promotion removeProductFromPromotion(Long id, Long productId) {
         Promotion promotion = getPromotionById(id);
         if (promotion != null) {
             promotion.removeProduct(productId);
             promotionRepository.save(promotion);
             eventPublisher.publishEvent(new DiscountPromotionExpiredEvent(this, promotion));
+
+            return promotion;
         }
+        throw new IllegalArgumentException("Promotion not found for id: " + id);
     }
 
     // @Transactional
@@ -83,13 +89,15 @@ public class PromotionService {
     // }
 
     @Transactional
-    public void schedulePromotion(Long id, Date startDate, Date endDate) {
+    public Promotion schedulePromotion(Long id, Date startDate, Date endDate) {
         Promotion promotion = getPromotionById(id);
         if (promotion != null) {
             promotion.setStartDate(startDate);
             promotion.setEndDate(endDate);
             promotionRepository.save(promotion);
+            return promotion;
         }
+        throw new IllegalArgumentException("Promotion not found for id: " + id);
     }
 
     @Scheduled(fixedRate = 60000)
