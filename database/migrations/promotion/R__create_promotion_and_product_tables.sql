@@ -1,8 +1,3 @@
--- V2__create_promotion_and_product_tables.sql
-
--- Create the sequence for generating promotion IDs
-CREATE SEQUENCE IF NOT EXISTS promotion_seq START WITH 1 INCREMENT BY 1;
-
 -- Create the table for storing promotion information
 CREATE TABLE IF NOT EXISTS promotion (
     id_promotion BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,

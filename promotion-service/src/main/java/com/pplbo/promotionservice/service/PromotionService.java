@@ -76,10 +76,10 @@ public class PromotionService {
 
     // @Transactional
     // public void applyFreeShipping(Long id, Order order){
-    //     Promotion promotion = getPromotionById(id);
-    //     if (promotion != null) {
-    //         order.setFeeShipping(0);
-    //     }
+    // Promotion promotion = getPromotionById(id);
+    // if (promotion != null) {
+    // order.setFeeShipping(0);
+    // }
     // }
 
     @Transactional
@@ -92,7 +92,7 @@ public class PromotionService {
         }
     }
 
-    @Scheduled(fixedRate = 3600000)
+    @Scheduled(fixedRate = 60000)
     @Transactional
     public void updateActivePromotions() {
         List<Promotion> promotions = promotionRepository.findAll();
@@ -103,12 +103,15 @@ public class PromotionService {
                     !PromotionStatus.ACTIVE.equals(promotion.getStatus())) {
                 promotion.setStatus(PromotionStatus.ACTIVE);
                 promotionRepository.save(promotion);
-                eventPublisher.publishEvent(new DiscountPromotionActivatedEvent(this, promotion));
+
+                if ((PromotionType.DISCOUNT.equals(promotion.getType()))) {
+                    eventPublisher.publishEvent(new DiscountPromotionActivatedEvent(this, promotion));
+                }
             }
         }
     }
 
-    @Scheduled(fixedRate = 3600000)
+    @Scheduled(fixedRate = 60000)
     @Transactional
     public void updateExpiredPromotions() {
         List<Promotion> promotions = promotionRepository.findAll();
@@ -119,7 +122,9 @@ public class PromotionService {
                     !PromotionStatus.EXPIRED.equals(promotion.getStatus())) {
                 promotion.setStatus(PromotionStatus.EXPIRED);
                 promotionRepository.save(promotion);
-                eventPublisher.publishEvent(new DiscountPromotionExpiredEvent(this, promotion));
+                if ((PromotionType.DISCOUNT.equals(promotion.getType()))) {
+                    eventPublisher.publishEvent(new DiscountPromotionExpiredEvent(this, promotion));
+                }
             }
         }
     }
