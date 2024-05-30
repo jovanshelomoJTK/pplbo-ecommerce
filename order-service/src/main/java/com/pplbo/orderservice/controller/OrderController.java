@@ -1,6 +1,6 @@
 package com.pplbo.orderservice.controller;
 
-import com.pplbo.orderservice.model.Test;
+import com.pplbo.orderservice.model.Order;
 import com.pplbo.orderservice.service.OrderService;
 
 import java.util.List;
@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class OrderController {
 
     @Autowired
-    OrderService cartService;
+    OrderService orderService;
 
-    @GetMapping("/test")
-    public List<Test> test() {
-        return cartService.getAllTests();
+    @GetMapping("/orders")
+    public List<Order> getAllOrder() {
+        return orderService.getAllOrder();
     }
 }

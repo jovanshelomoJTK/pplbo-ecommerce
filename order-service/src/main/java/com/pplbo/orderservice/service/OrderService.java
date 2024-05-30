@@ -5,16 +5,16 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.pplbo.orderservice.model.Test;
-import com.pplbo.orderservice.repository.TestRepository;
+import com.pplbo.orderservice.model.Order;
+import com.pplbo.orderservice.repository.OrderRepository;
 
 @Service
 public class OrderService {
 
     @Autowired
-    private TestRepository testRepository;
+    private OrderRepository orderRepository;
 
-    public List<Test> getAllTests() {
-        return testRepository.findAll();
+    public List<Order> getAllOrder() {
+        return orderRepository.findAll();
     }
 }
