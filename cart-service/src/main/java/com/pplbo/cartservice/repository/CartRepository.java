@@ -8,6 +8,6 @@ import java.util.List;
 
 @Repository
 public interface CartRepository extends JpaRepository<Cart, Long> {
-    // Custom query methods can be added here
-    List<Cart> findByProductName(String productName);
+    List<Cart> findByProductId(String productId);
+    List<Cart> findByUserId(String userId);
 }
