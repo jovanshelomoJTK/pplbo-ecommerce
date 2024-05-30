@@ -1,12 +1,12 @@
 package com.pplbo.exampleservice.controller;
 
-import com.pplbo.exampleservice.jwt.customannotations.AllowedRoles; // tambahkan ini
-import com.pplbo.exampleservice.jwt.customannotations.UserDataFromToken; // tambahkan ini
-import com.pplbo.exampleservice.jwt.model.JwtUserData; // tambahkan ini
-import com.pplbo.exampleservice.jwt.model.JwtUserData.Role; // tambahkan ini
+// !!!!!!!!!!!!!! JANGAN LUPA IMPORT 4 CLASS INI
+import com.pplbo.exampleservice.jwt.customannotations.AllowedRoles;
+import com.pplbo.exampleservice.jwt.customannotations.UserDataFromToken;
+import com.pplbo.exampleservice.jwt.model.JwtUserData;
+import com.pplbo.exampleservice.jwt.model.JwtUserData.Role;
 
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -21,20 +21,28 @@ public class ExampleController {
     }
 
     @GetMapping("/customer-only")
-    @AllowedRoles({ Role.CUSTOMER })
+    @AllowedRoles({ Role.CUSTOMER }) // isinya bisa {Role.ADMIN}, {Role.CUSTOMER}, atau {Role.ADMIN, Role.CUSTOMER}
     public JwtUserData myUserData2(@UserDataFromToken JwtUserData userData) {
         return userData;
     }
 
     @GetMapping("/admin-and-customer")
-    @AllowedRoles({ Role.ADMIN, Role.CUSTOMER })
+    @AllowedRoles({ Role.ADMIN, Role.CUSTOMER }) // isinya bisa {Role.ADMIN}, {Role.CUSTOMER}, atau {Role.ADMIN,
+                                                 // Role.CUSTOMER}
     public JwtUserData myUserData3(@UserDataFromToken JwtUserData userData) {
         return userData;
     }
 
-    @GetMapping("/without-token")
-    public JwtUserData myUserData4(@Nullable @UserDataFromToken JwtUserData userData) {
-        return userData;
+    @GetMapping("/my-role")
+    @AllowedRoles({ Role.ADMIN, Role.CUSTOMER }) // isinya bisa {Role.ADMIN}, {Role.CUSTOMER}, atau {Role.ADMIN,
+                                                 // Role.CUSTOMER}
+    public Role myRole(@UserDataFromToken JwtUserData userData) {
+        // masih ada get-get yang lain: getId(), getEmail(), getName()
+        return userData.getRole();
     }
 
+    // KALAU MAU BISA DIAKSES TANPA LOGIN, HAPUS ANNOTATION AllowedRoles
+
+    // Di Swagger, akan ada button "Authorize" di kanan atas, klik dan masukkan
+    // token yang ada di .env.example
 }
