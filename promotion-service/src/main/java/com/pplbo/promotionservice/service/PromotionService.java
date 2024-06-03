@@ -40,8 +40,14 @@ public class PromotionService {
     }
 
     public List<Promotion> getAllActivePromotion() {
-        List<Promotion> promotions = promotionRepository.findAllByStatus(PromotionStatus.ACTIVE.name());
-        return promotions != null ? promotions : new ArrayList<>();
+        try {
+            List<Promotion> promotions = promotionRepository.findByStatus(PromotionStatus.ACTIVE);
+            return promotions;
+        } catch (Exception e) {
+            System.err.println("Error fetching active promotions: ");
+            e.printStackTrace();
+            throw new RuntimeException("Error fetching active promotions", e);
+        }
     }
 
     @Transactional

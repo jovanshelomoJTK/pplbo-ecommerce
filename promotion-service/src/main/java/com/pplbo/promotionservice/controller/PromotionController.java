@@ -40,12 +40,22 @@ public class PromotionController {
             return new ResponseEntity<>("Promotion not found", HttpStatus.NOT_FOUND);
         }
     }
-
+    
     @GetMapping
-    public ResponseEntity<List<Promotion>> getAllActivePromotions() {
-        List<Promotion> promotions = promotionService.getAllActivePromotion();
-        return new ResponseEntity<>(promotions, HttpStatus.OK);
+    public ResponseEntity<?> getAllActivePromotions() {
+        try {
+            List<Promotion> promotions = promotionService.getAllActivePromotion();
+            if (promotions.isEmpty()) {
+                return new ResponseEntity<>("No active promotions available", HttpStatus.OK);
+            }
+            return new ResponseEntity<>(promotions, HttpStatus.OK);
+        } catch (Exception e) {
+            System.err.println("Error in getAllActivePromotions: ");
+            e.printStackTrace();
+            return new ResponseEntity<>("Failed to retrieve active promotions: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
+    
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletePromotion(@PathVariable Long id) {
