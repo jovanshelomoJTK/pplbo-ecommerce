@@ -14,8 +14,8 @@ CREATE TABLE IF NOT EXISTS shippings (
     shipping_address VARCHAR(255) NOT NULL
 );
 
--- Create the Orders table
-CREATE TABLE IF NOT EXISTS Orders (
+-- Create the orders table
+CREATE TABLE IF NOT EXISTS orders (
     order_id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     order_date TIMESTAMP NOT NULL,
     order_status OrderStatus NOT NULL,
@@ -37,17 +37,17 @@ CREATE TABLE IF NOT EXISTS order_items (
     price DECIMAL(10, 2) NOT NULL,
     CONSTRAINT fk_order
         FOREIGN KEY (order_id) 
-        REFERENCES Orders (order_id)
+        REFERENCES orders (order_id)
         ON DELETE CASCADE
 );
 
--- Insert sample data into Orders table
-INSERT INTO Orders (order_date, order_status, total_price, shipping_address) 
+-- Insert sample data into orders table
+INSERT INTO orders (order_date, order_status, total_price, shipping_address) 
 VALUES ('2024-05-30 00:00:00', 'PENDING', NULL, '123 Main St');
 
 -- Retrieve the generated order ID
 WITH new_order AS (
-    SELECT order_id FROM Orders WHERE order_date = '2024-05-30 00:00:00' AND shipping_address = '123 Main St'
+    SELECT order_id FROM orders WHERE order_date = '2024-05-30 00:00:00' AND shipping_address = '123 Main St'
 )
 -- Insert sample data into order_items table using the retrieved order ID
 INSERT INTO order_items (order_id, product_id, quantity, price)
