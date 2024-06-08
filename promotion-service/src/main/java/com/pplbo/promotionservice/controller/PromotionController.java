@@ -26,9 +26,10 @@ public class PromotionController {
             Promotion promotion = Promotion.fromRequest(request);
             Promotion savedPromotion = promotionService.createPromotion(promotion);
             return new ResponseEntity<>(savedPromotion, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>("Failed to create promotion: " + e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            return new ResponseEntity<>("Failed to create promotion: " + e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Failed to create promotion: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -92,7 +93,9 @@ public class PromotionController {
         try {
             Promotion savedPromotion = promotionService.removeProductFromPromotion(id, productId);
             return new ResponseEntity<>(savedPromotion, HttpStatus.OK);
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>("Failed to create promotion: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+        }catch (Exception e) {
             return new ResponseEntity<>("Failed to remove product from promotion: " + e.getMessage(),
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }

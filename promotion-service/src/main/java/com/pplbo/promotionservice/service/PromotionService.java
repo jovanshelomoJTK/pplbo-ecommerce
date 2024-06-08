@@ -30,9 +30,24 @@ public class PromotionService {
 
     @Transactional
     public Promotion createPromotion(Promotion promotion) {
+        Date currentDate = new Date();
+
+        // Ensure start date is not before the current date
         if (promotion.getStartDate() == null) {
-            promotion.setStartDate(new Date());
+            promotion.setStartDate(currentDate);
         }
+
+        // Ensure end date is after start date
+        if (promotion.getEndDate() != null && promotion.getEndDate().before(promotion.getStartDate())) {
+            throw new IllegalArgumentException("End date must be later than start date");
+        }
+
+        // Ensure discount percentage is greater than 0
+        if (promotion.getDiscountPercentage() <= 0) {
+            throw new IllegalArgumentException("Discount percentage must be greater than 0");
+        }
+
+
         Promotion savedPromotion = promotionRepository.save(promotion);
         return savedPromotion;
     }
@@ -60,7 +75,11 @@ public class PromotionService {
 
     @Transactional
     public void deletePromotion(Long id) {
-        promotionRepository.deleteById(id);
+        Promotion promotion = getPromotionById(id);
+        if (promotion != null) {
+            promotionRepository.deleteById(id);
+        }
+        throw new IllegalArgumentException("Promotion not found for id: " + id);
     }
 
     @Transactional
@@ -69,14 +88,14 @@ public class PromotionService {
             Promotion promotion = getPromotionById(id);
             if (promotion != null) {
                 promotion.applyPromotion(productId);
-                
+
                 promotionRepository.save(promotion);
-                
+
                 // Check if start date is now or in the past, then publish event
                 if (promotion.getStartDate().compareTo(new Date()) <= 0) {
                     eventPublisher.publishEvent(new DiscountPromotionActivatedEvent(this, promotion));
                 }
-                
+
                 return promotion;
             }
             throw new IllegalArgumentException("Promotion not found for id: " + id);
@@ -84,7 +103,7 @@ public class PromotionService {
             throw new IllegalArgumentException("Invalid product ID");
         }
     }
-    
+
     @Transactional
     public Promotion removeProductFromPromotion(Long id, Long productId) {
         Promotion promotion = getPromotionById(id);
@@ -164,4 +183,6 @@ public class PromotionService {
         // }
         return true;
     }
+
+
 }
