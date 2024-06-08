@@ -30,6 +30,9 @@ public class PromotionService {
 
     @Transactional
     public Promotion createPromotion(Promotion promotion) {
+        if (promotion.getStartDate() == null) {
+            promotion.setStartDate(new Date());
+        }
         Promotion savedPromotion = promotionRepository.save(promotion);
         return savedPromotion;
     }
@@ -61,11 +64,6 @@ public class PromotionService {
             Promotion promotion = getPromotionById(id);
             if (promotion != null) {
                 promotion.applyPromotion(productId);
-                
-                // Set start date if it's not already set
-                if (promotion.getStartDate() == null) {
-                    promotion.setStartDate(new Date());
-                }
                 
                 promotionRepository.save(promotion);
                 
