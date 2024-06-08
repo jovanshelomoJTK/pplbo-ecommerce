@@ -53,6 +53,11 @@ public class PromotionService {
         }
     }
 
+    public List<Promotion> getAllPromotion() {
+        List<Promotion> promotions = promotionRepository.findAll();
+        return promotions;
+    }
+
     @Transactional
     public void deletePromotion(Long id) {
         promotionRepository.deleteById(id);
