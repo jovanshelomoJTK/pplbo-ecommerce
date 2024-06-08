@@ -130,7 +130,7 @@ public class Promotion {
         Promotion promotion = new Promotion();
         promotion.setStartDate(request.startDate());
         promotion.setEndDate(request.endDate());
-        promotion.setStatus(request.status());
+        promotion.setStatus(PromotionStatus.INACTIVE);
         promotion.setType(request.type());
         promotion.setDiscountPercentage(request.discountPercentage());
         promotion.setProductIds(request.productIds());
