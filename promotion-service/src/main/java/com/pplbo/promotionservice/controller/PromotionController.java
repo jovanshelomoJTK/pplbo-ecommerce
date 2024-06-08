@@ -31,6 +31,13 @@ public class PromotionController {
         }
     }
 
+    @GetMapping()
+    public ResponseEntity<?> getPromotion() {
+        List<Promotion> promotion = promotionService.getAllPromotion();
+        return new ResponseEntity<>(promotion, HttpStatus.OK);
+
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getPromotionById(@PathVariable Long id) {
         Promotion promotion = promotionService.getPromotionById(id);
@@ -41,7 +48,7 @@ public class PromotionController {
         }
     }
     
-    @GetMapping
+    @GetMapping("/active")
     public ResponseEntity<?> getAllActivePromotions() {
         try {
             List<Promotion> promotions = promotionService.getAllActivePromotion();
