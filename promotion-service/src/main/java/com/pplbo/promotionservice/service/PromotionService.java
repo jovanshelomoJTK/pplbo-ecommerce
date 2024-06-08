@@ -78,8 +78,10 @@ public class PromotionService {
         Promotion promotion = getPromotionById(id);
         if (promotion != null) {
             promotionRepository.deleteById(id);
+        }else{
+            throw new IllegalArgumentException("Promotion not found for id: " + id);
         }
-        throw new IllegalArgumentException("Promotion not found for id: " + id);
+       
     }
 
     @Transactional
