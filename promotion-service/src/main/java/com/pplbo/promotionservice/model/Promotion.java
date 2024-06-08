@@ -16,7 +16,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 
-import com.pplbo.promotionservice.controller.CreatePromotionRequest;
+import com.pplbo.promotionservice.dto.CreatePromotionRequest;
 import com.pplbo.promotionservice.service.PromotionStatus;
 import com.pplbo.promotionservice.service.PromotionType;
 
@@ -128,12 +128,12 @@ public class Promotion {
 
     public static Promotion fromRequest(CreatePromotionRequest request) {
         Promotion promotion = new Promotion();
-        promotion.setStartDate(request.getStartDate());
-        promotion.setEndDate(request.getEndDate());
-        promotion.setStatus(request.getStatus());
-        promotion.setType(request.getType());
-        promotion.setDiscountPercentage(request.getDiscountPercentage());
-        promotion.setProductIds(request.getProductIds());
+        promotion.setStartDate(request.startDate());
+        promotion.setEndDate(request.endDate());
+        promotion.setStatus(request.status());
+        promotion.setType(request.type());
+        promotion.setDiscountPercentage(request.discountPercentage());
+        promotion.setProductIds(request.productIds());
         return promotion;
     }
 }

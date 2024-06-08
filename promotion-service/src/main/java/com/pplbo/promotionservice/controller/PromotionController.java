@@ -1,5 +1,6 @@
 package com.pplbo.promotionservice.controller;
 
+import com.pplbo.promotionservice.dto.CreatePromotionRequest;
 import com.pplbo.promotionservice.model.Promotion;
 import com.pplbo.promotionservice.service.PromotionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +33,7 @@ public class PromotionController {
     }
 
     @GetMapping()
-    public ResponseEntity<?> getPromotion() {
+    public ResponseEntity<?> getPromotions() {
         List<Promotion> promotion = promotionService.getAllPromotion();
         return new ResponseEntity<>(promotion, HttpStatus.OK);
 
