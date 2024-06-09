@@ -9,6 +9,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*; 
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("category")
@@ -28,7 +29,7 @@ public class CategoryController {
     }
 
     @PostMapping
-    public ResponseEntity<Category> addCategory(@RequestBody Category category) {
+    public ResponseEntity<Category> addCategory(@Valid @RequestBody Category category) {
         Category createdCategory = categoryService.saveCategory(category);
         return ResponseEntity.ok(createdCategory);
     }

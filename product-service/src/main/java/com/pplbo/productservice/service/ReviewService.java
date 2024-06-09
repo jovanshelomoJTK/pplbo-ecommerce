@@ -13,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.pplbo.productservice.model.Review;
 import com.pplbo.productservice.repository.ReviewRepository;
+import com.pplbo.productservice.repository.ProductRepository;
 
 import jakarta.validation.ValidationException;
 
@@ -22,69 +23,41 @@ public class ReviewService {
     @Autowired
     private ReviewRepository reviewRepository;
 
+    @Autowired
+    private ProductRepository productRepository;
+
     public List<Review> getAllReviews() {
-        return reviewRepository.findAll();
+        List<Review> reviews = reviewRepository.findAll();
+        if (reviews.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No reviews found");
+        }
+        return reviews;
     }
 
     public Review getReviewById(Long reviewId) {
-        return reviewRepository.findById(reviewId).orElse(null);
+        return reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Review not found"));
     }
 
     public List<Review> getReviewsByProductId(Long productId) {
-        return reviewRepository.findByProductId(productId);
+        List<Review> reviews = reviewRepository.findByProductId(productId);
+        if (reviews.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No reviews found for product with ID " + productId);
+        }
+        return reviews;
     }
 
     public Review addReview(Review review) {
+        validateProductExists(review.getProductId());
         validateRating(review.getRating());
         validateRecommendationReview(review.getRecommendationReview());
         return reviewRepository.save(review);
     }
 
-    public Review updateReview(Long reviewId, Map<String, Object> updates){
-        Review existingReview = reviewRepository.findById(reviewId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Review not found"));
-        updates.forEach((key, value) -> {
-            switch (key) {
-                case "productId":
-                    existingReview.setProductId(((Integer) value).longValue());
-                    break;
-                case "rating":
-                    validateRating((Integer) value);
-                    existingReview.setRating((Integer) value);
-                    break;
-                case "recommendationReview":
-                    validateRecommendationReview((String) value);
-                    existingReview.setRecommendationReview((String) value);
-                    break;
-                case "review":
-                    existingReview.setReview((String) value);
-                    break;
-                case "reviewMedia":
-                    existingReview.setReviewMedia((String) value);
-                    break;
-                case "reviewDate":
-                    existingReview.setReviewDate(convertStringToTimestamp((String) value));;
-                    break;
-                default:
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid field: " + key);
-            }
-        });
-        return reviewRepository.save(existingReview);
-    }
-
     public void deleteReview(Long reviewId) {
         Review reviewToDelete = reviewRepository.findById(reviewId)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Review not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Review not found"));
         reviewRepository.delete(reviewToDelete);
-    }
-
-    private Timestamp convertStringToTimestamp(String strDate) {
-        try {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-            return new Timestamp(dateFormat.parse(strDate).getTime());
-        } catch (ParseException e) {
-            throw new ValidationException("Invalid date format. Please use 'yyyy-MM-dd'T'HH:mm:ss'");
-        }
     }
 
     private void validateRating(int rating) {
@@ -98,4 +71,11 @@ public class ReviewService {
             throw new IllegalArgumentException("Recommendation review must be either 'yes' or 'no'");
         }
     }
+
+    private void validateProductExists(Long productId) {
+        if (!productRepository.existsById(productId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product with ID " + productId + " does not exist");
+        }
+    }
+     
 }

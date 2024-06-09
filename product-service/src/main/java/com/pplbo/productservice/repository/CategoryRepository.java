@@ -7,6 +7,7 @@ import com.pplbo.productservice.model.Category;
 import java.util.List;
 
 @Repository
-public interface CategoryRepository extends JpaRepository<Category, Long>{
+public interface CategoryRepository extends JpaRepository<Category, Long> {
     List<Category> findAll();
-} 
+    boolean existsByCategoryName(String categoryName);
+}

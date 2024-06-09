@@ -22,19 +22,30 @@ public class CategoryService {
     }
 
     public Category getCategoryById(Long categoryId) {
-        return categoryRepository.findById(categoryId).orElse(null);
+        return categoryRepository.findById(categoryId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found"));
     }
 
     public Category saveCategory(Category category) {
+        if (category.getCategoryName() == null || category.getCategoryName().trim().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Category name is mandatory");
+        }
+        if (categoryRepository.existsByCategoryName(category.getCategoryName())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Category name already exists");
+        }
         return categoryRepository.save(category);
     }
 
     public Category patchCategory(Long categoryId, Map<String, Object> updates) {
         Category existingCategory = categoryRepository.findById(categoryId)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found"));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found"));
 
         if (updates.containsKey("categoryName")) {
-            existingCategory.setCategoryName((String) updates.get("categoryName"));
+            String newCategoryName = (String) updates.get("categoryName");
+            if (categoryRepository.existsByCategoryName(newCategoryName)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Category name already exists");
+            }
+            existingCategory.setCategoryName(newCategoryName);
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid field: " + updates.keySet().toString());
         }
@@ -43,11 +54,10 @@ public class CategoryService {
     }
 
     public Map<String, Boolean> deleteCategory(Long categoryId) {
-        Category existingCategory = categoryRepository.findById(categoryId).orElse(null);
-        if (existingCategory != null) {
-            categoryRepository.delete(existingCategory);
-            return Map.of("deleted", Boolean.TRUE);
-        }
-        return Map.of("deleted", Boolean.FALSE);
-    }
+        Category existingCategory = categoryRepository.findById(categoryId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found"));
+    
+        categoryRepository.delete(existingCategory);
+        return Map.of("deleted", Boolean.TRUE);
+    }    
 }
