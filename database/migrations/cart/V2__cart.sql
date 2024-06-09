@@ -1,4 +1,4 @@
--- V2__Create_table_cart.sql
+-- V2__cart.sql
 CREATE TABLE IF NOT EXISTS Cart (
     id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     product_id VARCHAR(255) NOT NULL,

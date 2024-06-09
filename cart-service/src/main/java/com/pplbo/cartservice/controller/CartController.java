@@ -33,23 +33,21 @@ public class CartController {
         return cartService.addItemToCart(cart, userData.getId());
     }
 
-    @DeleteMapping("/remove/{id}")
-    public void removeItemFromCart(@PathVariable Long id) {
-        cartService.removeItemFromCart(id);
+    @DeleteMapping("/remove/{productId}")
+    @AllowedRoles({ Role.CUSTOMER })
+    public void removeItemFromCart(@PathVariable String productId, @UserDataFromToken JwtUserData userData) {
+        cartService.removeItemFromCart(userData.getId(), productId);
     }
 
-    @PutMapping("/update")
-    public Cart updateItemInCart(@RequestBody CartDTO cart,@UserDataFromToken JwtUserData userData ) {
-        return cartService.updateItemInCart(cart, userData.getId());
+    @PutMapping("/updateQuantity/{productId}")
+    @AllowedRoles({ Role.CUSTOMER })
+    public Cart updateQuantityItemInCart(@PathVariable String productId, @RequestParam int quantity, @UserDataFromToken JwtUserData userData) {
+        return cartService.updateQuantityItemInCart(userData.getId(), productId, quantity);
     }
-
-    // @PatchMapping("/update/{id}")
-    // public CartDTO partiallyUpdateItemInCart(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
-    //     return cartService.partiallyUpdateItemInCart(id, updates);
-    // }
 
     @GetMapping("/total")
-    public Double getTotal() {
-        return cartService.getTotal();
+    @AllowedRoles({ Role.CUSTOMER })
+    public Double getTotal(@UserDataFromToken JwtUserData userData) {
+        return cartService.getTotal(userData.getId());
     }
 }

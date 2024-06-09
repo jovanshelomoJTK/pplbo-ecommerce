@@ -21,44 +21,44 @@ public class CartService {
     }
 
     public Cart addItemToCart(CartDTO cartDTO, String userId) {
-        Cart cart = new Cart();
-        cart.setPrice(cartDTO.getPrice());
-        cart.setProductId(cartDTO.getProductId());
-        cart.setQuantity(cartDTO.getQuantity());
-        cart.setUserId(userId);
+        try {
+            if (cartDTO == null || cartDTO.getProductId() == null || cartDTO.getPrice() == 0 || cartDTO.getPrice() <= 0
+                    || cartDTO.getQuantity() == 0 || cartDTO.getQuantity() <= 0) {
+                throw new IllegalArgumentException("Cart fields cannot be null, zero, or negative");
+            }
 
-        return cartRepository.save(cart);
+            Cart cart = new Cart();
+            cart.setPrice(cartDTO.getPrice());
+            cart.setProductId(cartDTO.getProductId());
+            cart.setQuantity(cartDTO.getQuantity());
+            cart.setUserId(userId);
+
+            return cartRepository.save(cart);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to add item to cart: " + e.getMessage());
+        }
     }
 
-    public void removeItemFromCart(Long id) {
-        cartRepository.deleteById(id);
+    public void removeItemFromCart(String userId, String productId) {
+        Cart cart = cartRepository.findByUserIdAndProductId(userId, productId)
+                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+        cartRepository.delete(cart);
     }
 
-    public Cart updateItemInCart(CartDTO cartDTO, String userId) {
-        Cart cart = new Cart();
-        cart.setPrice(cartDTO.getPrice());
-        cart.setProductId(cartDTO.getProductId());
-        cart.setQuantity(cartDTO.getQuantity());
-        cart.setUserId(userId);
+     public Cart updateQuantityItemInCart(String userId, String productId, int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Quantity cannot be zero or negative");
+        }
+
+        Cart cart = cartRepository.findByUserIdAndProductId(userId, productId)
+                .orElseThrow(() -> new RuntimeException("Cart item not found"));
+        cart.setQuantity(quantity);
          
         return cartRepository.save(cart);
     }
 
-    // public Cart partiallyUpdateItemInCart(Long id, Map<String, Object> updates) {
-    //     Cart cart = cartRepository.findById(id).orElseThrow(() -> new RuntimeException("Cart not found"));
-
-    //     if (updates.containsKey("quantity")) {
-    //         cart.setQuantity((Integer) updates.get("quantity"));
-    //     }
-    //     if (updates.containsKey("price")) {
-    //         cart.setPrice((Double) updates.get("price"));
-    //     }
-
-    //     return cartRepository.save(cart);
-    // }
-
-    public Double getTotal() {
-        List<Cart> carts = cartRepository.findAll();
-        return carts.stream().mapToDouble(cart -> cart.getPrice() * cart.getQuantity()).sum();
+    public Double getTotal(String userId) {
+        List<Cart> cart = cartRepository.findByUserId(userId);
+        return cart.stream().mapToDouble(product -> product.getPrice() * product.getQuantity()).sum();
     }
 }
