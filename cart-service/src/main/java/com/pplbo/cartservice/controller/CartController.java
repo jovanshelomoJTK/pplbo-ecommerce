@@ -48,7 +48,8 @@ public class CartController {
 
     @DeleteMapping("/remove/{productId}")
     @AllowedRoles({ Role.CUSTOMER })
-    public ResponseEntity<Void> removeItemFromCart(@PathVariable String productId, @UserDataFromToken JwtUserData userData) {
+    public ResponseEntity<Void> removeItemFromCart(@PathVariable String productId,
+            @UserDataFromToken JwtUserData userData) {
         try {
             cartService.removeItemFromCart(userData.getId(), productId);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -58,6 +59,20 @@ public class CartController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    
+    @DeleteMapping("/remove")
+    @AllowedRoles({ Role.CUSTOMER })
+    public ResponseEntity<Void> removeAllItemsFromCart(@UserDataFromToken JwtUserData userData) {
+        try {
+            cartService.removeAllItemsFromCart(userData.getId());
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 
     @PutMapping("/updateQuantity/{productId}")
     @AllowedRoles({ Role.CUSTOMER })

@@ -48,6 +48,14 @@ public class CartService {
         cartRepository.delete(cart);
     }
 
+    public void removeAllItemsFromCart(String userId) {
+        List<Cart> carts = cartRepository.findByUserId(userId);
+        if (carts.isEmpty()) {
+            throw new RuntimeException("No cart items found for user");
+        }
+        cartRepository.deleteAll(carts);
+    }
+
     public Cart updateQuantityItemInCart(String userId, String productId, int quantity) {
         if (quantity <= 0) {
             throw new IllegalArgumentException("Quantity must be greater than 0");
@@ -71,4 +79,8 @@ public class CartService {
         List<Cart> cart = cartRepository.findByUserId(userId);
         return cart.stream().mapToDouble(product -> product.getPrice() * product.getQuantity()).sum();
     }
+
+
+
+
 }
