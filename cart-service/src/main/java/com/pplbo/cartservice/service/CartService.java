@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.pplbo.cartservice.model.Cart;
+import com.pplbo.cartservice.dto.CartDTO;
 import com.pplbo.cartservice.repository.CartRepository;
 
 @Service
@@ -15,11 +16,17 @@ public class CartService {
     @Autowired
     private CartRepository cartRepository;
 
-    public List<Cart> getAllCarts() {
-        return cartRepository.findAll();
+    public List<Cart> getCart(String userId) {
+        return cartRepository.findByUserId(userId);
     }
 
-    public Cart addItemToCart(Cart cart) {
+    public Cart addItemToCart(CartDTO cartDTO, String userId) {
+        Cart cart = new Cart();
+        cart.setPrice(cartDTO.getPrice());
+        cart.setProductId(cartDTO.getProductId());
+        cart.setQuantity(cartDTO.getQuantity());
+        cart.setUserId(userId);
+
         return cartRepository.save(cart);
     }
 
@@ -27,22 +34,28 @@ public class CartService {
         cartRepository.deleteById(id);
     }
 
-    public Cart updateItemInCart(Cart cart) {
+    public Cart updateItemInCart(CartDTO cartDTO, String userId) {
+        Cart cart = new Cart();
+        cart.setPrice(cartDTO.getPrice());
+        cart.setProductId(cartDTO.getProductId());
+        cart.setQuantity(cartDTO.getQuantity());
+        cart.setUserId(userId);
+         
         return cartRepository.save(cart);
     }
 
-    public Cart partiallyUpdateItemInCart(Long id, Map<String, Object> updates) {
-        Cart cart = cartRepository.findById(id).orElseThrow(() -> new RuntimeException("Cart not found"));
+    // public Cart partiallyUpdateItemInCart(Long id, Map<String, Object> updates) {
+    //     Cart cart = cartRepository.findById(id).orElseThrow(() -> new RuntimeException("Cart not found"));
 
-        if (updates.containsKey("quantity")) {
-            cart.setQuantity((Integer) updates.get("quantity"));
-        }
-        if (updates.containsKey("price")) {
-            cart.setPrice((Double) updates.get("price"));
-        }
+    //     if (updates.containsKey("quantity")) {
+    //         cart.setQuantity((Integer) updates.get("quantity"));
+    //     }
+    //     if (updates.containsKey("price")) {
+    //         cart.setPrice((Double) updates.get("price"));
+    //     }
 
-        return cartRepository.save(cart);
-    }
+    //     return cartRepository.save(cart);
+    // }
 
     public Double getTotal() {
         List<Cart> carts = cartRepository.findAll();

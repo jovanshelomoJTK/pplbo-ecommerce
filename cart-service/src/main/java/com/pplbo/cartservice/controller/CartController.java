@@ -1,7 +1,12 @@
 package com.pplbo.cartservice.controller;
 
-import com.pplbo.cartservice.model.Cart;
+import com.pplbo.cartservice.dto.CartDTO;
 import com.pplbo.cartservice.service.CartService;
+import com.pplbo.cartservice.jwt.customannotations.AllowedRoles;
+import com.pplbo.cartservice.jwt.customannotations.UserDataFromToken;
+import com.pplbo.cartservice.jwt.model.JwtUserData;
+import com.pplbo.cartservice.jwt.model.JwtUserData.Role;
+import com.pplbo.cartservice.model.Cart;
 
 import java.util.List;
 import java.util.Map;
@@ -17,13 +22,15 @@ public class CartController {
     CartService cartService;
 
     @GetMapping("/")
-    public List<Cart> getAllCarts() {
-        return cartService.getAllCarts();
+    @AllowedRoles({ Role.CUSTOMER })
+    public List<Cart> getCart(@UserDataFromToken JwtUserData userData) {
+        return cartService.getCart(userData.getId());
     }
 
     @PostMapping("/add")
-    public Cart addItemToCart(@RequestBody Cart cart) {
-        return cartService.addItemToCart(cart);
+    @AllowedRoles({ Role.CUSTOMER })
+    public Cart addItemToCart(@RequestBody CartDTO cart, @UserDataFromToken JwtUserData userData) {
+        return cartService.addItemToCart(cart, userData.getId());
     }
 
     @DeleteMapping("/remove/{id}")
@@ -32,14 +39,14 @@ public class CartController {
     }
 
     @PutMapping("/update")
-    public Cart updateItemInCart(@RequestBody Cart cart) {
-        return cartService.updateItemInCart(cart);
+    public Cart updateItemInCart(@RequestBody CartDTO cart,@UserDataFromToken JwtUserData userData ) {
+        return cartService.updateItemInCart(cart, userData.getId());
     }
 
-    @PatchMapping("/update/{id}")
-    public Cart partiallyUpdateItemInCart(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
-        return cartService.partiallyUpdateItemInCart(id, updates);
-    }
+    // @PatchMapping("/update/{id}")
+    // public CartDTO partiallyUpdateItemInCart(@PathVariable Long id, @RequestBody Map<String, Object> updates) {
+    //     return cartService.partiallyUpdateItemInCart(id, updates);
+    // }
 
     @GetMapping("/total")
     public Double getTotal() {
