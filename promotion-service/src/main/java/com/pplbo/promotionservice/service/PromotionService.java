@@ -160,6 +160,11 @@ public class PromotionService {
 
     @Transactional
     public Promotion schedulePromotion(Long id, Date startDate, Date endDate) {
+        // Mengecek apakah endDate lebih awal dari startDate
+        if (endDate.before(startDate)) {
+            throw new IllegalArgumentException("Invalid start date and end date: end date cannot be earlier than start date.");
+        }
+    
         Promotion promotion = getPromotionById(id);
         if (promotion != null) {
             Date currentDate = resetTime(new Date()); // Mendapatkan tanggal saat ini tanpa waktu
