@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -30,16 +31,17 @@ public class PromotionService {
 
     @Transactional
     public Promotion createPromotion(Promotion promotion) {
-        Date currentDate = new Date();
+        Date currentDate = resetTime(new Date());
 
         // Ensure start date is not before the current date
         if (promotion.getStartDate() == null) {
             promotion.setStartDate(currentDate);
+        } else if (resetTime(promotion.getStartDate()).compareTo(currentDate) < 0) {
+            throw new IllegalArgumentException("Start date must be today or later");
         }
 
-
         // Ensure end date is after start date
-        if (promotion.getEndDate() != null && promotion.getEndDate().before(promotion.getStartDate())) {
+        if (promotion.getEndDate() != null && resetTime(promotion.getEndDate()).before(resetTime(promotion.getStartDate()))) {
             throw new IllegalArgumentException("End date must be later than start date");
         }
 
@@ -66,6 +68,8 @@ public class PromotionService {
         Promotion savedPromotion = promotionRepository.save(promotion);
         return savedPromotion;
     }
+
+    
 
     public Promotion getPromotionById(Long id) {
         Optional<Promotion> promotion = promotionRepository.findById(id);
@@ -146,6 +150,19 @@ public class PromotionService {
     public Promotion schedulePromotion(Long id, Date startDate, Date endDate) {
         Promotion promotion = getPromotionById(id);
         if (promotion != null) {
+            Date currentDate = resetTime(new Date()); // Mendapatkan tanggal saat ini tanpa waktu
+    
+            // Mengubah status berdasarkan kondisi yang diberikan menggunakan compareTo
+            if (promotion.getStatus() == PromotionStatus.ACTIVE && resetTime(startDate).compareTo(currentDate) > 0 && resetTime(startDate).compareTo(endDate) < 0) {
+                promotion.setStatus(PromotionStatus.INACTIVE);
+            } else if (promotion.getStatus() == PromotionStatus.EXPIRED && resetTime(startDate).compareTo(currentDate) <= 0 && resetTime(endDate).compareTo(currentDate) > 0) {
+                promotion.setStatus(PromotionStatus.ACTIVE);
+            } else if (promotion.getStatus() == PromotionStatus.INACTIVE && resetTime(startDate).compareTo(currentDate) == 0) {
+                promotion.setStatus(PromotionStatus.ACTIVE);
+            } else if (resetTime(endDate).compareTo(currentDate) < 0) {
+                promotion.setStatus(PromotionStatus.EXPIRED);
+            }
+    
             promotion.setStartDate(startDate);
             promotion.setEndDate(endDate);
             promotionRepository.save(promotion);
@@ -153,6 +170,8 @@ public class PromotionService {
         }
         throw new IllegalArgumentException("Promotion not found for id: " + id);
     }
+    
+    
 
     @Scheduled(fixedRate = 60000)
     @Transactional
@@ -199,6 +218,16 @@ public class PromotionService {
         // return false;
         // }
         return true;
+    }
+
+        private Date resetTime(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTime();
     }
 
 

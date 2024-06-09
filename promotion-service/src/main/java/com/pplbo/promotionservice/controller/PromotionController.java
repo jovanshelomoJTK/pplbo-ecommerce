@@ -108,7 +108,7 @@ public class PromotionController {
     // promotionService.applyFreeShipping(id, order);
     // }
 
-    @PostMapping("/schedule/{id}")
+    @PutMapping("/schedule/{id}")
     public ResponseEntity<?> schedulePromotion(@PathVariable Long id,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date startDate,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date endDate) {
