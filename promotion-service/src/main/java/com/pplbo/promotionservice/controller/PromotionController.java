@@ -78,7 +78,7 @@ public class PromotionController {
         }
     }
 
-    @PostMapping("/{id}/product/{productId}")
+    @PutMapping("/{id}/product/{productId}")
     public ResponseEntity<?> addProductToPromotion(@PathVariable Long id, @PathVariable Long productId) {
         try {
             Promotion savedPromotion = promotionService.addProductToPromotion(id, productId);

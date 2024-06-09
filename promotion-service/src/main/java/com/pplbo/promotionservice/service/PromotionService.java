@@ -118,7 +118,7 @@ public class PromotionService {
     
                 // Check if start date is now or in the past, then publish event
                 if (promotion.getStartDate().compareTo(new Date()) <= 0) {
-                    eventPublisher.publishEvent(new DiscountPromotionActivatedEvent(this, promotion));
+                    eventPublisher.publishEvent(new DiscountPromotionActivatedEvent(promotion));
                 }
     
                 return promotion;
@@ -134,14 +134,21 @@ public class PromotionService {
     public Promotion removeProductFromPromotion(Long id, Long productId) {
         Promotion promotion = getPromotionById(id);
         if (promotion != null) {
+            List<Long> productIds = promotion.getProductIds();
+            if (!productIds.contains(productId)) {
+                throw new IllegalArgumentException("Product not found for productId: " + productId);
+            }
+            
             promotion.removeProduct(productId);
             promotionRepository.save(promotion);
-            eventPublisher.publishEvent(new DiscountPromotionExpiredEvent(this, promotion));
-
+            eventPublisher.publishEvent(new DiscountPromotionExpiredEvent(promotion));
+    
             return promotion;
         }
         throw new IllegalArgumentException("Promotion not found for id: " + id);
     }
+    
+    
 
     // @Transactional
     // public void applyFreeShipping(Long id, Order order){
@@ -191,7 +198,7 @@ public class PromotionService {
                 promotionRepository.save(promotion);
 
                 if ((PromotionType.DISCOUNT.equals(promotion.getType()))) {
-                    eventPublisher.publishEvent(new DiscountPromotionActivatedEvent(this, promotion));
+                    eventPublisher.publishEvent(new DiscountPromotionActivatedEvent(promotion));
                 }
             }
         }
@@ -209,7 +216,7 @@ public class PromotionService {
                 promotion.setStatus(PromotionStatus.EXPIRED);
                 promotionRepository.save(promotion);
                 if ((PromotionType.DISCOUNT.equals(promotion.getType()))) {
-                    eventPublisher.publishEvent(new DiscountPromotionExpiredEvent(this, promotion));
+                    eventPublisher.publishEvent(new DiscountPromotionExpiredEvent(promotion));
                 }
             }
         }
