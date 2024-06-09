@@ -1,6 +1,9 @@
 package com.pplbo.paymentservice.service;
 
 import com.pplbo.paymentservice.dto.PaymentRequestDTO;
+import com.pplbo.paymentservice.event.OrderCreatedEvent;
+import com.pplbo.paymentservice.event.PaymentStatusUpdatedEvent;
+import com.pplbo.paymentservice.kafka.KafkaProducerService;
 import com.pplbo.paymentservice.model.Payment;
 import com.pplbo.paymentservice.model.PaymentMethod;
 import com.pplbo.paymentservice.repository.PaymentRepository;
@@ -15,6 +18,9 @@ public class PaymentService {
 
     @Autowired
     private PaymentRepository paymentRepository;
+
+    @Autowired
+    private KafkaProducerService kafkaProducerService;
 
     public Payment createPayment(PaymentRequestDTO paymentRequestDTO) {
         Payment payment = new Payment();
@@ -66,5 +72,20 @@ public class PaymentService {
         } else {
             return false;
         }
+    }
+
+    public void processPayment(OrderCreatedEvent event) {
+        PaymentRequestDTO paymentRequestDTO = new PaymentRequestDTO();
+        paymentRequestDTO.setCustomerId(event.getCustomerId().intValue()); 
+        paymentRequestDTO.setOrderId(event.getOrderId().intValue());
+        
+        Payment payment = createPayment(paymentRequestDTO);
+
+        payment.setStatus("PAID");
+        paymentRepository.save(payment);
+
+        // Publish event to notify that payment status has been updated
+        PaymentStatusUpdatedEvent paymentStatusUpdatedEvent = new PaymentStatusUpdatedEvent(event.getOrderId(), "PAID");
+        kafkaProducerService.sendPaymentStatusUpdateEvent(paymentStatusUpdatedEvent);
     }
 }
