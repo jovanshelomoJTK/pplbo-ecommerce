@@ -6,7 +6,7 @@ import java.util.Date;
 import java.util.List;
 
 @RestController
-@RequestMapping("/promotions")
+@RequestMapping("/promotion")
 public class PromotionController {
     private PromotionService promotionService;
 
