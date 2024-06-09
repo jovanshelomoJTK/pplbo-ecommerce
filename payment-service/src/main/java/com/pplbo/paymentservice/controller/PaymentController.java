@@ -1,12 +1,16 @@
 package com.pplbo.paymentservice.controller;
 
+import com.pplbo.paymentservice.dto.PaymentRequestDTO;
 import com.pplbo.paymentservice.model.Payment;
+import com.pplbo.paymentservice.model.PaymentMethod;
+import com.pplbo.paymentservice.service.PaymentMethodService;
 import com.pplbo.paymentservice.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/payments")
@@ -15,21 +19,32 @@ public class PaymentController {
     @Autowired
     private PaymentService paymentService;
 
+    @Autowired
+    private PaymentMethodService paymentMethodService;
+
     @PostMapping
-    public ResponseEntity<Payment> createPayment(@RequestBody Payment payment) {
-        Payment createdPayment = paymentService.createPayment(payment);
+    public ResponseEntity<Payment> createPayment(@RequestBody PaymentRequestDTO paymentRequestDTO) {
+        Payment createdPayment = paymentService.createPayment(paymentRequestDTO);
         return ResponseEntity.ok(createdPayment);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<Payment> updatePaymentStatus(@PathVariable Long id) {
-        Payment updatedPayment = paymentService.updatePaymentStatus(id);
-        return ResponseEntity.ok(updatedPayment);
+    @PutMapping("/{kodePayment}")
+    public ResponseEntity<Payment> updatePaymentStatus(
+            @PathVariable String kodePayment,
+            @RequestParam int saldo,
+            @RequestParam Long paymentMethodId) {
+        Optional<PaymentMethod> paymentMethodOptional = paymentMethodService.findById(paymentMethodId);
+        if (paymentMethodOptional.isPresent()) {
+            Payment updatedPayment = paymentService.updatePaymentStatus(kodePayment, saldo, paymentMethodOptional.get());
+            return ResponseEntity.ok(updatedPayment);
+        } else {
+            return ResponseEntity.badRequest().body(null);
+        }
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Payment> getPaymentById(@PathVariable Long id) {
-        Payment payment = paymentService.getPaymentById(id);
+    @GetMapping("/{kode_payment}")
+    public ResponseEntity<Payment> getPaymentById(@PathVariable String kode_payment) {
+        Payment payment = paymentService.getPaymentById(kode_payment);
         if (payment != null) {
             return ResponseEntity.ok(payment);
         } else {
@@ -43,9 +58,9 @@ public class PaymentController {
         return ResponseEntity.ok(payments);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deletePayment(@PathVariable Long id) {
-        boolean deleted = paymentService.deletePayment(id);
+    @DeleteMapping("/{kode_payment}")
+    public ResponseEntity<String> deletePayment(@PathVariable String kode_payment) {
+        boolean deleted = paymentService.deletePayment(kode_payment);
         if (deleted) {
             return ResponseEntity.ok("Payment deleted successfully.");
         } else {

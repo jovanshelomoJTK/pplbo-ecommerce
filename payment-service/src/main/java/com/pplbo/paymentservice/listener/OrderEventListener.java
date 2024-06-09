@@ -19,11 +19,10 @@ public class OrderEventListener {
         Payment payment = new Payment();
         payment.setCustomerId(orderEvent.getCustomerId());
         payment.setOrderId(orderEvent.getOrderId());
-        payment.setTotal(orderEvent.getTotal());
         payment.setStatus("PENDING");
         payment.setPaymentMethod(orderEvent.getPaymentMethod());
 
-        paymentService.createPayment(payment);
+        // paymentService.createPayment(payment);
     }
 
     // Jika Menggunakan Kafka

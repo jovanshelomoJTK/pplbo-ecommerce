@@ -1,45 +1,52 @@
 package com.pplbo.paymentservice.model;
 
+import java.util.UUID;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
-@Table(name = "payment")
+@Table(name = "payment", uniqueConstraints = @UniqueConstraint(columnNames = "kodePayment"))
 @Entity
 public class Payment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "payment_seq")
-    @SequenceGenerator(name = "payment_seq", sequenceName = "payment_seq", allocationSize = 1)
-    private Long id;
-
+    private String kodePayment;
     private Integer customerId;
     private Integer orderId;
-    private Integer total;
     private String status;
 
-    @Enumerated(EnumType.STRING)
+    @ManyToOne
+    @JoinColumn(name = "payment_method_id", nullable = true)
     private PaymentMethod paymentMethod;
 
     public Payment() {
     }
 
-    public Payment(Long id, Integer customerId, Integer orderId, Integer total, String status, PaymentMethod paymentMethod) {
-        this.id = id;
+    public Payment(String kodePayment, Integer customerId, Integer orderId, String status, PaymentMethod paymentMethod) {
+        this.kodePayment = kodePayment;
         this.customerId = customerId;
         this.orderId = orderId;
-        this.total = total;
         this.status = status;
         this.paymentMethod = paymentMethod;
     }
 
-    public Long getId() {
-        return id;
+    // Ensure kodePayment is set before persisting the entity
+    @PrePersist
+    public void prePersist() {
+        if (kodePayment == null) {
+            kodePayment = UUID.randomUUID().toString();
+        }
+    }
+
+    public String getKodePayment() {
+        return kodePayment;
     }
 
     public Integer getCustomerId() {
@@ -50,10 +57,6 @@ public class Payment {
         return orderId;
     }
 
-    public Integer getTotal() {
-        return total;
-    }
-
     public String getStatus() {
         return status;
     }
@@ -62,8 +65,8 @@ public class Payment {
         return paymentMethod;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setKodePayment(String kodePayment) {
+        this.kodePayment = kodePayment;
     }
 
     public void setCustomerId(Integer customerId) {
@@ -72,10 +75,6 @@ public class Payment {
 
     public void setOrderId(Integer orderId) {
         this.orderId = orderId;
-    }
-
-    public void setTotal(Integer total) {
-        this.total = total;
     }
 
     public void setStatus(String status) {
