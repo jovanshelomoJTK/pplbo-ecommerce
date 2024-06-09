@@ -37,16 +37,31 @@ public class PromotionService {
             promotion.setStartDate(currentDate);
         }
 
+
         // Ensure end date is after start date
         if (promotion.getEndDate() != null && promotion.getEndDate().before(promotion.getStartDate())) {
             throw new IllegalArgumentException("End date must be later than start date");
         }
 
-        // Ensure discount percentage is greater than 0
-        if (promotion.getDiscountPercentage() <= 0) {
-            throw new IllegalArgumentException("Discount percentage must be greater than 0");
+        // Validate promotion type
+        if (promotion.getType() == null) {
+            throw new IllegalArgumentException("Promotion type must be specified");
         }
 
+        switch (promotion.getType()) {
+            case DISCOUNT:
+                // Ensure discount percentage is greater than 0
+                if (promotion.getDiscountPercentage() <= 0) {
+                    throw new IllegalArgumentException("Discount percentage must be greater than 0 for discount promotions");
+                }
+                break;
+            case FREESHIPPING:
+                // Ensure discount percentage is null for free shipping promotions
+                promotion.setDiscountPercentage(0);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid promotion type");
+        }
 
         Promotion savedPromotion = promotionRepository.save(promotion);
         return savedPromotion;

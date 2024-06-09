@@ -8,6 +8,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -119,4 +120,13 @@ public class PromotionController {
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+    
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<String> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+        String errorMessage = "The input data is invalid. Please check the data and try again.";
+        return new ResponseEntity<>(errorMessage, HttpStatus.BAD_REQUEST);
+    }
+    
+
 }
