@@ -108,15 +108,19 @@ public class PromotionService {
         if (isValidProduct(productId)) {
             Promotion promotion = getPromotionById(id);
             if (promotion != null) {
+                // Cek jika status promosi adalah EXPIRED
+                if (promotion.getStatus() == PromotionStatus.EXPIRED) {
+                    throw new IllegalArgumentException("Promosi berstatus Expire sehingga tidak dapat diubah");
+                }
+    
                 promotion.applyPromotion(productId);
-
                 promotionRepository.save(promotion);
-
+    
                 // Check if start date is now or in the past, then publish event
                 if (promotion.getStartDate().compareTo(new Date()) <= 0) {
                     eventPublisher.publishEvent(new DiscountPromotionActivatedEvent(this, promotion));
                 }
-
+    
                 return promotion;
             }
             throw new IllegalArgumentException("Promotion not found for id: " + id);
@@ -124,6 +128,7 @@ public class PromotionService {
             throw new IllegalArgumentException("Invalid product ID");
         }
     }
+    
 
     @Transactional
     public Promotion removeProductFromPromotion(Long id, Long productId) {
