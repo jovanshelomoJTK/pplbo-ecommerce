@@ -2,7 +2,7 @@ package com.pplbo.orderservice.jwt.model;
 
 public class JwtUserData {
 
-    public static enum Role {
+    public enum Role {
         ADMIN, CUSTOMER
     }
 
@@ -25,28 +25,28 @@ public class JwtUserData {
         return id;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public String getName() {
-        return name;
-    }
-
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getEmail() {
+        return email;
     }
 
     public void setEmail(String email) {
         this.email = email;
     }
 
+    public Role getRole() {
+        return role;
+    }
+
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public void setName(String name) {
@@ -62,5 +62,4 @@ public class JwtUserData {
                 ", name='" + name + '\'' +
                 '}';
     }
-
 }

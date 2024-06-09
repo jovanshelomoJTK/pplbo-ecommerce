@@ -13,10 +13,10 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.pplbo.orderservice.jwt.customannotations.AllowedRoles;
+import com.pplbo.orderservice.jwt.model.JwtUserData;
 import com.pplbo.orderservice.jwt.model.JwtUserData.Role;
 import com.pplbo.orderservice.jwt.util.JwtUtil;
 
-import io.jsonwebtoken.lang.Arrays;
 import jakarta.servlet.http.HttpServletRequest;
 
 @Aspect
@@ -27,7 +27,6 @@ public class RoleAuthorizationAspect {
     JwtUtil jwtUtil;
 
     @Around("@annotation(com.pplbo.orderservice.jwt.customannotations.AllowedRoles)")
-
     public Object checkRole(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
@@ -42,10 +41,16 @@ public class RoleAuthorizationAspect {
         String token = authorizationHeader.substring(7);
 
         // Decode and parse the token to create a JwtUserData object
-        var userData = jwtUtil.getUserData(token);
+        JwtUserData userData = jwtUtil.getUserData(token);
 
         // Check if the user has one of the allowed roles
-        boolean authorized = Arrays.asList(roles).contains(userData.getRole());
+        boolean authorized = false;
+        for (Role role : roles) {
+            if (userData.getRole() == role) {
+                authorized = true;
+                break;
+            }
+        }
 
         // If the user has one of the allowed roles, proceed with the method execution
         if (authorized) {

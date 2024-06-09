@@ -8,17 +8,16 @@ import org.springframework.stereotype.Service;
 @Service
 public class KafkaProducer {
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(KafkaProducer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaProducer.class);
 
-    private KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaTemplate<String, String> kafkaTemplate;
 
     public KafkaProducer(KafkaTemplate<String, String> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
 
     public void sendMessage(String topic, String message) {
-        LOGGER.info(String.format("Message sent-> %s", message));
+        LOGGER.info(String.format("Message sent to topic '%s' -> %s", topic, message));
         kafkaTemplate.send(topic, message);
     }
-    
 }

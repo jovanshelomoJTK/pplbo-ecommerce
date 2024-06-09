@@ -1,15 +1,14 @@
 package com.pplbo.orderservice.jwt.util;
 
-import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
 import com.pplbo.orderservice.jwt.model.JwtUserData;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
+import javax.crypto.SecretKey;
 
 @Component
 public class JwtUtil {
@@ -18,17 +17,21 @@ public class JwtUtil {
     private String SECRET;
 
     public JwtUserData getUserData(String token) {
-        Claims claims = Jwts
-                .parser()
-                .verifyWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET)))
-                .requireIssuer("pplbo-ecommerce")
-                .build()
-                .parseSignedClaims(token).getPayload();
+        SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes());
 
-        return new JwtUserData(
-                claims.get("id", String.class),
-                claims.get("email", String.class),
-                JwtUserData.Role.valueOf(claims.get("role", String.class)),
-                claims.get("name", String.class));
+        Jws<Claims> claimsJws = Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token);
+
+        Claims body = claimsJws.getBody();
+
+        String id = body.get("id", String.class);
+        String email = body.get("email", String.class);
+        String roleName = body.get("role", String.class);
+        JwtUserData.Role role = JwtUserData.Role.valueOf(roleName);
+        String name = body.get("name", String.class);
+
+        return new JwtUserData(id, email, role, name);
     }
 }

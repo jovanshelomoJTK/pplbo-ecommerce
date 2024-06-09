@@ -32,6 +32,4 @@ public class Order {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "shipping_id", referencedColumnName = "shippingId")
     private Shipping shipping;
-
-    
 }

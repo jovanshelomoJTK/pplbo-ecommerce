@@ -13,6 +13,4 @@ public class KafkaTopicConfig {
         return TopicBuilder.name("order-topic")
             .build();
     }
-    
 }
-
