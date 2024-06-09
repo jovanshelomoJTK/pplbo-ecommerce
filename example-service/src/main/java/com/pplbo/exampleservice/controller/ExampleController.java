@@ -1,6 +1,6 @@
 package com.pplbo.exampleservice.controller;
 
-// !!!!!!!!!!!!!! JANGAN LUPA IMPORT 4 CLASS INI
+// !!!!!!!!!!!!!! JANGAN LUPA IMPORT 4 CLASS INI (sesuaikan package nya dengan service masing-masing, udah di copy in package jwt di service nya)
 import com.pplbo.exampleservice.jwt.customannotations.AllowedRoles;
 import com.pplbo.exampleservice.jwt.customannotations.UserDataFromToken;
 import com.pplbo.exampleservice.jwt.model.JwtUserData;
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/example")
 public class ExampleController {
 
     @GetMapping("/admin-only")

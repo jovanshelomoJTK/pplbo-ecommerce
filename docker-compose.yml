@@ -42,6 +42,7 @@ services:
       - server.connection-timeout=60000
       - eureka.client.fetch-registry=true
       - eureka.client.register-with-eureka=true
+      - eureka.instance.preferIpAddress=true
     depends_on:
       - service-registry
     ports:
@@ -59,6 +60,7 @@ services:
       - server.connection-timeout=60000
       - eureka.client.fetch-registry=true
       - eureka.client.register-with-eureka=true
+      - eureka.instance.preferIpAddress=true
       - database.url=jdbc:postgresql://db:5432/cart
       - database.username=${POSTGRES_USER}
       - database.password=${POSTGRES_PASSWORD}
@@ -81,6 +83,7 @@ services:
       - server.connection-timeout=60000
       - eureka.client.fetch-registry=true
       - eureka.client.register-with-eureka=true
+      - eureka.instance.preferIpAddress=true
       - database.url=jdbc:postgresql://db:5432/order
       - database.username=${POSTGRES_USER}
       - database.password=${POSTGRES_PASSWORD}
@@ -103,6 +106,7 @@ services:
       - server.connection-timeout=60000
       - eureka.client.fetch-registry=true
       - eureka.client.register-with-eureka=true
+      - eureka.instance.preferIpAddress=true
       - database.url=jdbc:postgresql://db:5432/payment
       - database.username=${POSTGRES_USER}
       - database.password=${POSTGRES_PASSWORD}
@@ -125,6 +129,7 @@ services:
       - server.connection-timeout=60000
       - eureka.client.fetch-registry=true
       - eureka.client.register-with-eureka=true
+      - eureka.instance.preferIpAddress=true
       - database.url=jdbc:postgresql://db:5432/product
       - database.username=${POSTGRES_USER}
       - database.password=${POSTGRES_PASSWORD}
@@ -147,6 +152,7 @@ services:
       - server.connection-timeout=60000
       - eureka.client.fetch-registry=true
       - eureka.client.register-with-eureka=true
+      - eureka.instance.preferIpAddress=true
       - database.url=jdbc:postgresql://db:5432/promotion
       - database.username=${POSTGRES_USER}
       - database.password=${POSTGRES_PASSWORD}
@@ -169,6 +175,7 @@ services:
       - server.connection-timeout=60000
       - eureka.client.fetch-registry=true
       - eureka.client.register-with-eureka=true
+      - eureka.instance.preferIpAddress=true
       - database.url=jdbc:postgresql://db:5432/promotion
       - database.username=${POSTGRES_USER}
       - database.password=${POSTGRES_PASSWORD}
