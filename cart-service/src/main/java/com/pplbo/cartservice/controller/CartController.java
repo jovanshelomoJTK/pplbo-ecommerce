@@ -8,11 +8,12 @@ import com.pplbo.cartservice.jwt.model.JwtUserData;
 import com.pplbo.cartservice.jwt.model.JwtUserData.Role;
 import com.pplbo.cartservice.model.Cart;
 
-import java.util.List;
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/cart")
@@ -23,31 +24,64 @@ public class CartController {
 
     @GetMapping("/")
     @AllowedRoles({ Role.CUSTOMER })
-    public List<Cart> getCart(@UserDataFromToken JwtUserData userData) {
-        return cartService.getCart(userData.getId());
+    public ResponseEntity<List<Cart>> getCart(@UserDataFromToken JwtUserData userData) {
+        try {
+            List<Cart> cart = cartService.getCart(userData.getId());
+            return new ResponseEntity<>(cart, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PostMapping("/add")
     @AllowedRoles({ Role.CUSTOMER })
-    public Cart addItemToCart(@RequestBody CartDTO cart, @UserDataFromToken JwtUserData userData) {
-        return cartService.addItemToCart(cart, userData.getId());
+    public ResponseEntity<Cart> addItemToCart(@RequestBody CartDTO cart, @UserDataFromToken JwtUserData userData) {
+        try {
+            Cart newCart = cartService.addItemToCart(cart, userData.getId());
+            return new ResponseEntity<>(newCart, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @DeleteMapping("/remove/{productId}")
     @AllowedRoles({ Role.CUSTOMER })
-    public void removeItemFromCart(@PathVariable String productId, @UserDataFromToken JwtUserData userData) {
-        cartService.removeItemFromCart(userData.getId(), productId);
+    public ResponseEntity<Void> removeItemFromCart(@PathVariable String productId, @UserDataFromToken JwtUserData userData) {
+        try {
+            cartService.removeItemFromCart(userData.getId(), productId);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PutMapping("/updateQuantity/{productId}")
     @AllowedRoles({ Role.CUSTOMER })
-    public Cart updateQuantityItemInCart(@PathVariable String productId, @RequestParam int quantity, @UserDataFromToken JwtUserData userData) {
-        return cartService.updateQuantityItemInCart(userData.getId(), productId, quantity);
+    public ResponseEntity<Cart> updateQuantityItemInCart(@PathVariable String productId, @RequestParam int quantity, @UserDataFromToken JwtUserData userData) {
+        try {
+            Cart updatedCart = cartService.updateQuantityItemInCart(userData.getId(), productId, quantity);
+            return new ResponseEntity<>(updatedCart, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping("/total")
     @AllowedRoles({ Role.CUSTOMER })
-    public Double getTotal(@UserDataFromToken JwtUserData userData) {
-        return cartService.getTotal(userData.getId());
+    public ResponseEntity<Double> getTotal(@UserDataFromToken JwtUserData userData) {
+        try {
+            Double total = cartService.getTotal(userData.getId());
+            return new ResponseEntity<>(total, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

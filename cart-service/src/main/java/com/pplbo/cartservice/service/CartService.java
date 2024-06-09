@@ -1,7 +1,6 @@
 package com.pplbo.cartservice.service;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,6 +12,8 @@ import com.pplbo.cartservice.repository.CartRepository;
 @Service
 public class CartService {
 
+    private static final int MAX_CART_ITEMS = 100;
+
     @Autowired
     private CartRepository cartRepository;
 
@@ -21,22 +22,24 @@ public class CartService {
     }
 
     public Cart addItemToCart(CartDTO cartDTO, String userId) {
-        try {
-            if (cartDTO == null || cartDTO.getProductId() == null || cartDTO.getPrice() == 0 || cartDTO.getPrice() <= 0
-                    || cartDTO.getQuantity() == 0 || cartDTO.getQuantity() <= 0) {
-                throw new IllegalArgumentException("Cart fields cannot be null, zero, or negative");
-            }
-
-            Cart cart = new Cart();
-            cart.setPrice(cartDTO.getPrice());
-            cart.setProductId(cartDTO.getProductId());
-            cart.setQuantity(cartDTO.getQuantity());
-            cart.setUserId(userId);
-
-            return cartRepository.save(cart);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to add item to cart: " + e.getMessage());
+        if (cartDTO == null || cartDTO.getProductId() == null || cartDTO.getPrice() <= 0 || cartDTO.getQuantity() <= 0) {
+            throw new IllegalArgumentException("Cart fields cannot be null, zero, or negative");
         }
+
+        List<Cart> currentCartItems = cartRepository.findByUserId(userId);
+        int totalItemsInCart = currentCartItems.stream().mapToInt(Cart::getQuantity).sum();
+
+        if (totalItemsInCart + cartDTO.getQuantity() > MAX_CART_ITEMS) {
+            throw new IllegalArgumentException("Cannot add more than " + MAX_CART_ITEMS + " items to the cart");
+        }
+
+        Cart cart = new Cart();
+        cart.setPrice(cartDTO.getPrice());
+        cart.setProductId(cartDTO.getProductId());
+        cart.setQuantity(cartDTO.getQuantity());
+        cart.setUserId(userId);
+
+        return cartRepository.save(cart);
     }
 
     public void removeItemFromCart(String userId, String productId) {
@@ -45,15 +48,22 @@ public class CartService {
         cartRepository.delete(cart);
     }
 
-     public Cart updateQuantityItemInCart(String userId, String productId, int quantity) {
+    public Cart updateQuantityItemInCart(String userId, String productId, int quantity) {
         if (quantity <= 0) {
-            throw new IllegalArgumentException("Quantity cannot be zero or negative");
+            throw new IllegalArgumentException("Quantity must be greater than 0");
         }
 
         Cart cart = cartRepository.findByUserIdAndProductId(userId, productId)
                 .orElseThrow(() -> new RuntimeException("Cart item not found"));
+
+        List<Cart> currentCartItems = cartRepository.findByUserId(userId);
+        int totalItemsInCart = currentCartItems.stream().mapToInt(Cart::getQuantity).sum();
+
+        if (totalItemsInCart - cart.getQuantity() + quantity > MAX_CART_ITEMS) {
+            throw new IllegalArgumentException("Cannot have more than " + MAX_CART_ITEMS + " items in the cart");
+        }
+
         cart.setQuantity(quantity);
-         
         return cartRepository.save(cart);
     }
 
