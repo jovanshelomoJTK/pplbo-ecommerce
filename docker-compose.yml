@@ -142,9 +142,11 @@ services:
       - database.username=${POSTGRES_USER}
       - database.password=${POSTGRES_PASSWORD}
       - jwt.secret=${JWT_SECRET}
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
     depends_on:
       - service-registry
       - db
+      - kafka
     ports:
       - "8083:8080"
     networks:
