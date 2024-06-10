@@ -2,6 +2,8 @@ package com.pplbo.cartservice.controller;
 
 import com.pplbo.cartservice.dto.CartDTO;
 import com.pplbo.cartservice.service.CartService;
+import com.pplbo.cartservice.event.ProductUpdated;      
+import com.pplbo.cartservice.kafka.KafkaSenderService;  
 import com.pplbo.cartservice.jwt.customannotations.AllowedRoles;
 import com.pplbo.cartservice.jwt.customannotations.UserDataFromToken;
 import com.pplbo.cartservice.jwt.model.JwtUserData;
@@ -21,6 +23,9 @@ public class CartController {
 
     @Autowired
     CartService cartService;
+
+    @Autowired
+    KafkaSenderService kafkaSenderService;
 
     @GetMapping("/")
     @AllowedRoles({ Role.CUSTOMER })
@@ -73,7 +78,6 @@ public class CartController {
         }
     }
 
-
     @PutMapping("/updateQuantity/{productId}")
     @AllowedRoles({ Role.CUSTOMER })
     public ResponseEntity<Cart> updateQuantityItemInCart(@PathVariable String productId, @RequestParam int quantity, @UserDataFromToken JwtUserData userData) {
@@ -95,6 +99,18 @@ public class CartController {
         try {
             Double total = cartService.getTotal(userData.getId());
             return new ResponseEntity<>(total, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/testKafkaProducer")
+    public ResponseEntity<String> testKafkaProducer() {
+        try {
+            // Ubah kode ini agar tidak menggunakan event dari KafkaListenerService
+            ProductUpdated event = new ProductUpdated("test-product-id", "Test Product", 123.45, 50);
+            kafkaSenderService.sendProductUpdatedMessage(event);
+            return new ResponseEntity<>("Message sent to Kafka", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
