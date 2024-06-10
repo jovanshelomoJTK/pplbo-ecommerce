@@ -45,4 +45,9 @@ public class ProductController {
         productService.deleteProduct(productId);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/search/{keyword}")
+    public List<Product> searchProducts(@PathVariable String keyword) {
+        return productService.searchProductsByKeyword(keyword);
+    }
 }

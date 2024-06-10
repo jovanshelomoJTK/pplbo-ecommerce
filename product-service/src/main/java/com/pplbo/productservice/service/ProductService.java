@@ -84,4 +84,12 @@ public class ProductService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
         productRepository.delete(product);
     }
+
+    public List<Product> searchProductsByKeyword(String keyword) {
+        List<Product> products = productRepository.findByProductNameContaining(keyword);
+        if (products.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No products found with the given keyword");
+        }
+        return products;
+    }
 }
