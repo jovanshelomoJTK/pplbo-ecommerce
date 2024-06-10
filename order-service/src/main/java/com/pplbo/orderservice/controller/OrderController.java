@@ -9,6 +9,9 @@ import com.pplbo.orderservice.dto.OrderRequest;
 import com.pplbo.orderservice.dto.OrderResponse;
 import com.pplbo.orderservice.service.OrderService;
 
+import com.pplbo.orderservice.event.OrderCreateEvent;
+import com.pplbo.orderservice.model.Order;
+
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
@@ -27,9 +30,19 @@ public class OrderController {
         return order.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    // @PostMapping
+    // public OrderResponse createOrder(@RequestBody OrderRequest orderRequest) {
+
+    //     return orderService.save(orderRequest);
+    // }
+
     @PostMapping
-    public OrderResponse createOrder(@RequestBody OrderRequest orderRequest) {
-        return orderService.save(orderRequest);
+    public String createOrder(@RequestBody OrderRequest orderRequest) {
+        
+        OrderResponse order = orderService.save(orderRequest);
+        OrderCreateEvent event = new OrderCreateEvent(order);
+        orderService.createEventOrder(event);
+        return "Order Created Event sent to Kafka topic";
     }
 
     @PutMapping("/{id}")

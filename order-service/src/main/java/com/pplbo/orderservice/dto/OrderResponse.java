@@ -8,6 +8,8 @@ public record OrderResponse(
     Date orderDate,
     String orderStatus,
     Double totalPrice,
-    List<OrderItemResponse> orderItems,
-    ShippingResponse shipping
+    List<OrderLineItemResponse> orderLineItems,
+    ShippingResponse shipping,
+    CustomerResponse customer,
+    Long paymentId
 ) {}

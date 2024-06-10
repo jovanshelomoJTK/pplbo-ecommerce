@@ -27,9 +27,15 @@ public class Order {
     private Double totalPrice;
     
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItem> orderItems = new ArrayList<>();
+    private List<OrderLineItem> orderLineItems = new ArrayList<>();
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "shipping_id", referencedColumnName = "shippingId")
     private Shipping shipping;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "customer_id", referencedColumnName = "customerId")
+    private Customer customer;
+
+    private Long paymentId;
 }

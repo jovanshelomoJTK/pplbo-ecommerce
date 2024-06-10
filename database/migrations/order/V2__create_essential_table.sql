@@ -1,74 +1,48 @@
--- Drop the existing ENUM types if they exist
-DROP TYPE IF EXISTS OrderStatus;
-DROP TYPE IF EXISTS ShippingStatus;
-
--- Create the ENUM type for order status
-CREATE TYPE OrderStatus AS ENUM (
-    'PENDING',
-    'PAID',
-    'CANCELLED'
-);
-
--- Create the ENUM type for shipping status
-CREATE TYPE ShippingStatus AS ENUM (
-    'PENDING',
-    'PACKED',
-    'SHIPPED',
-    'DELIVERED',
-    'RETURNED'
-);
-
--- Drop the existing tables if they exist
-DROP TABLE IF EXISTS order_items;
-DROP TABLE IF EXISTS orders;
-DROP TABLE IF EXISTS shippings;
-
--- Create the shippings table
-CREATE TABLE shippings (
-    shipping_id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+-- Create the shippings table if it doesn't exist
+CREATE TABLE IF NOT EXISTS shippings (
+    shipping_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     shipping_name VARCHAR(255) NOT NULL,
-    shipping_price DOUBLE PRECISION NOT NULL,
-    shipping_status ShippingStatus NOT NULL,
+    shipping_price DOUBLE NOT NULL,
+    shipping_status VARCHAR(255) NOT NULL,
     shipping_address VARCHAR(255) NOT NULL
 );
 
--- Create the orders table
-CREATE TABLE orders (
-    order_id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+-- Create the customers table if it doesn't exist
+CREATE TABLE IF NOT EXISTS customers (
+    customer_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    first_name VARCHAR(255) NOT NULL,
+    last_name VARCHAR(255) NOT NULL
+);
+
+-- Create the orders table if it doesn't exist
+CREATE TABLE IF NOT EXISTS orders (
+    order_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     order_date TIMESTAMP NOT NULL,
-    order_status OrderStatus NOT NULL,
-    total_price DOUBLE PRECISION,
+    order_status VARCHAR(255) NOT NULL,
+    total_price DOUBLE NOT NULL,
     shipping_id BIGINT,
+    customer_id BIGINT,
+    payment_id BIGINT,
     CONSTRAINT fk_shipping
         FOREIGN KEY (shipping_id) 
         REFERENCES shippings (shipping_id)
-        ON DELETE SET NULL
+        ON DELETE SET NULL,
+    CONSTRAINT fk_customer
+        FOREIGN KEY (customer_id) 
+        REFERENCES customers (customer_id)
+        ON DELETE SET NULL,
+    CONSTRAINT unique_customer_id UNIQUE (customer_id)
 );
 
--- Create the order_items table
-CREATE TABLE order_items (
-    order_item_id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    order_id BIGINT,
-    product_id BIGINT NOT NULL,
+-- Create the order_line_items table if it doesn't exist
+CREATE TABLE IF NOT EXISTS order_line_items (
+    order_line_item_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     quantity INT NOT NULL,
-    price DOUBLE PRECISION NOT NULL,
+    product_id INT NOT NULL,
+    order_id BIGINT,
     CONSTRAINT fk_order
         FOREIGN KEY (order_id) 
         REFERENCES orders (order_id)
         ON DELETE CASCADE
 );
 
--- Insert sample data into orders table
-INSERT INTO orders (order_date, order_status, total_price, shipping_id) 
-VALUES ('2024-05-30 00:00:00', 'PENDING', NULL, NULL);
-
--- Retrieve the generated order ID
-WITH new_order AS (
-    SELECT order_id FROM orders WHERE order_date = '2024-05-30 00:00:00'
-)
--- Insert sample data into order_items table using the retrieved order ID
-INSERT INTO order_items (order_id, product_id, quantity, price)
-SELECT order_id, 1, 2, 10.00 FROM new_order;
-
-INSERT INTO order_items (order_id, product_id, quantity, price)
-SELECT order_id, 2, 1, 20.00 FROM new_order;
