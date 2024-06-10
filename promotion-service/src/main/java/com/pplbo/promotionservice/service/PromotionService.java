@@ -2,6 +2,7 @@ package com.pplbo.promotionservice.service;
 
 import com.pplbo.promotionservice.event.DiscountPromotionActivatedEvent;
 import com.pplbo.promotionservice.event.DiscountPromotionExpiredEvent;
+import com.pplbo.promotionservice.kafka.KafkaProducerService;
 import com.pplbo.promotionservice.model.Promotion;
 import com.pplbo.promotionservice.repository.PromotionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,9 @@ public class PromotionService {
 
     @Autowired
     private PromotionRepository promotionRepository;
+
+    @Autowired
+    private KafkaProducerService kafkaProducer;
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final String productServiceUrl = "http://8084/product";
@@ -118,7 +122,7 @@ public class PromotionService {
     
                 // Check if start date is now or in the past, then publish event
                 if (promotion.getStartDate().compareTo(new Date()) <= 0) {
-                    eventPublisher.publishEvent(new DiscountPromotionActivatedEvent(promotion));
+                    kafkaProducer.sendMessage(new DiscountPromotionActivatedEvent(promotion));
                 }
     
                 return promotion;

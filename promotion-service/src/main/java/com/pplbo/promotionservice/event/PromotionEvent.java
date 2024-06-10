@@ -1,5 +1,5 @@
 package com.pplbo.promotionservice.event;
 
-public interface Event {
+public interface PromotionEvent {
 
 }

@@ -12,16 +12,5 @@ import java.util.List;
 public interface PromotionRepository extends JpaRepository<Promotion, Long> {
       List<Promotion> findByStatus(PromotionStatus status);
 
-    // default void updateById(Long id, Promotion newPromotion) {
-    //     findById(id).ifPresent(existingPromotion -> {
-    //         existingPromotion.setName(newPromotion.getName());
-    //         existingPromotion.setStartDate(newPromotion.getStartDate());
-    //         existingPromotion.setEndDate(newPromotion.getEndDate());
-    //         existingPromotion.setType(newPromotion.getType());
-    //         existingPromotion.setDiscountPercentage(newPromotion.getDiscountPercentage());
-    //         existingPromotion.setBuyQuantity(newPromotion.getBuyQuantity());
-    //         existingPromotion.setGetQuantity(newPromotion.getGetQuantity());
-    //         save(existingPromotion);
-    //     });
-    // }
+
 }

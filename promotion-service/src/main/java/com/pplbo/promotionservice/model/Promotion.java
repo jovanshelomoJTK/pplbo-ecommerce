@@ -137,4 +137,16 @@ public class Promotion {
         return promotion;
     }
 
+    @Override
+    public String toString() {
+        return "Promotion{" +
+                "id_promotion=" + id_promotion +
+                ", startDate=" + startDate +
+                ", endDate=" + endDate +
+                ", status=" + status +
+                ", type=" + type +
+                ", discountPercentage=" + discountPercentage +
+                ", productIds=" + productIds +
+                '}';
+    }
 }

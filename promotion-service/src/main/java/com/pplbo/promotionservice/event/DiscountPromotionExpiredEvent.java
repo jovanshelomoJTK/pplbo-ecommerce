@@ -2,7 +2,7 @@ package com.pplbo.promotionservice.event;
 
 import com.pplbo.promotionservice.model.Promotion;
 
-public class DiscountPromotionExpiredEvent implements Event {
+public class DiscountPromotionExpiredEvent implements PromotionEvent {
     private final Promotion promotion;
 
     public DiscountPromotionExpiredEvent(Promotion promotion) {
