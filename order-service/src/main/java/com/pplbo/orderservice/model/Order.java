@@ -18,18 +18,39 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long orderId;
+
+    private Long customerId;
     
     @Temporal(TemporalType.TIMESTAMP)
     private Date orderDate;
     
     private String orderStatus;
 
-    private Double totalPrice;
-    
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItem> orderItems = new ArrayList<>();
+    @Embedded
+    private OrderDetails orderDetails;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "shipping_id", referencedColumnName = "shippingId")
-    private Shipping shipping;
+    public Order(OrderDetails orderDetails) {
+        this.orderDetails = orderDetails;
+        this.orderStatus = OrderStatus.PENDING;
+    }
+    
+    // @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    // private List<OrderItem> orderItems = new ArrayList<>();
+
+    // @OneToOne(cascade = CascadeType.ALL)
+    // @JoinColumn(name = "shipping_id", referencedColumnName = "shippingId")
+    // private Shipping shipping;
+
+    @PrePersist
+    protected void onCreate() {
+        orderDate = new Date();
+    }
+
+    public void paidOrder() {
+        this.orderStatus = OrderStatus.PAID;
+    }
+
+    public void cancelOrder() {
+        this.orderStatus = OrderStatus.CANCELLED;
+    }
 }

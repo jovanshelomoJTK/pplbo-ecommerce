@@ -29,7 +29,8 @@ public class OrderController {
 
     @PostMapping
     public OrderResponse createOrder(@RequestBody OrderRequest orderRequest) {
-        return orderService.save(orderRequest);
+        Order order = orderSagaService.createOrder(new OrderDetails(orderRequest.getCustomerId(), 
+                        orderRequest.getTotalPrice(), orderRequest.getOrderItems(), orderRequest.getShipping()));
     }
 
     @PutMapping("/{id}")

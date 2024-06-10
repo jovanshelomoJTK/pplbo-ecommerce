@@ -4,8 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 public record OrderRequest(
-    Date orderDate,
-    String orderStatus,
+    Long customerId,
     Double totalPrice,
     List<OrderItemRequest> orderItems,
     ShippingRequest shipping

@@ -33,9 +33,15 @@ public class OrderService {
         return orderRepository.findById(id).map(this::convertToDto);
     }
 
-    public OrderResponse save(OrderRequest orderRequest) {
-        Order order = convertToEntity(orderRequest);
-        return convertToDto(orderRepository.save(order));
+    // public OrderResponse save(OrderRequest orderRequest) {
+    //     Order order = convertToEntity(orderRequest);
+    //     return convertToDto(orderRepository.save(order));
+    // }
+
+    public Order createOrder(OrderDetails orderDetails) {
+        System.out.println("Order created event sent");
+        Order order = Order.createOrder(orderDetails);
+        return orderRepository.save(order);
     }
 
     public void deleteById(Long id) {
@@ -91,5 +97,13 @@ public class OrderService {
 
         orderItems.forEach(item -> item.setOrder(order));
         return order;
+    }
+
+    public void approveOrder(Long orderId) {
+        orderRepository.findById(orderId).get().paidOrder();
+    }
+
+    public void cancelOrder(Long orderId) {
+        orderRepository.findById(orderId).get().cancelOrder();
     }
 }
