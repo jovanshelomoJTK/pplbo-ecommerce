@@ -1,8 +1,8 @@
 package com.pplbo.orderservice.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.pplbo.orderservice.common.OrderDetails;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -20,7 +20,7 @@ import lombok.Setter;
 public class OrderItem {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer orderItemId;
 
     @ManyToOne

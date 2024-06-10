@@ -1,7 +1,10 @@
 package com.pplbo.orderservice.controller;
 
+import com.pplbo.orderservice.common.OrderDetails;
 import com.pplbo.orderservice.model.Order;
+import com.pplbo.orderservice.sagas.OrderSagaService;
 import com.pplbo.orderservice.service.OrderService;
+import com.pplbo.orderservice.web.CreateOrderRequest;
 
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,13 +21,24 @@ public class OrderController {
     @Autowired
     OrderService orderService;
 
+    @Autowired
+    OrderSagaService orderSagaService;
+
     @GetMapping("/orders")
     public List<Order> getAllOrder() {
         return orderService.getAllOrder();
     }
 
     @PostMapping("/order")
-    public Order createOrder(@RequestBody Order order) {
-        return orderService.createOrder(order);
+    public Order createOrder(@RequestBody CreateOrderRequest createOrderRequest) {
+        // return orderService
+        //         .createOrder(new OrderDetails(createOrderRequest.getCustomerId(), createOrderRequest.getOrderTotal(),
+        //                 createOrderRequest.getShippingAddress()));
+        //                 // createOrderRequest.getOrderItems()));
+
+        return orderSagaService.createOrder(new OrderDetails(createOrderRequest.getCustomerId(), createOrderRequest.getOrderTotal(),
+                        createOrderRequest.getShippingAddress()));
+                        // createOrderRequest.getOrderItems();
+
     }
 }

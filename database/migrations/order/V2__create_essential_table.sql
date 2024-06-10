@@ -6,9 +6,11 @@ CREATE TYPE OrderStatus AS ENUM (
 
 CREATE TABLE IF NOT EXISTS Orders (
     order_id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    customer_id BIGINT,
     order_date DATE,
-    order_status OrderStatus,
-    shipping_address VARCHAR(255)
+    order_status VARCHAR(255),
+    shipping_address VARCHAR(255),
+    order_total DECIMAL(10, 2)
 );
 
 CREATE TABLE IF NOT EXISTS order_items (
@@ -19,6 +21,6 @@ CREATE TABLE IF NOT EXISTS order_items (
     price DECIMAL(10, 2)
 );
 
-INSERT INTO Orders (order_date, order_status, shipping_address) VALUES ('2024-05-30', 'PENDING', '123 Main St');
+INSERT INTO Orders (customer_id, order_date, order_status, shipping_address, order_total) VALUES (1, '2024-05-30', 'PENDING', '123 Main St', 80000.00);
 INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (1, 1, 2, 10.00);
 INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (1, 2, 1, 20.00);
