@@ -22,12 +22,54 @@ ext {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-aop'
 	implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.5.0'
+	implementation 'io.jsonwebtoken:jjwt:0.12.5'
 	runtimeOnly 'com.h2database:h2'
 	runtimeOnly 'org.postgresql:postgresql'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+	compileOnly 'org.projectlombok:lombok:1.18.32'
+	annotationProcessor 'org.projectlombok:lombok:1.18.32'
+	
+	testCompileOnly 'org.projectlombok:lombok:1.18.32'
+	testAnnotationProcessor 'org.projectlombok:lombok:1.18.32'
+
+	// implementation 'org.springframework.kafka:spring-kafka:3.2.0'
+	implementation 'io.eventuate.tram.core:eventuate-tram-messaging:0.34.0.RELEASE'
+
+
+    // implementation "io.eventuate.tram.core:eventuate-tram-spring-jdbc-kafka"
+	implementation 'io.eventuate.tram.core:eventuate-tram-spring-jdbc-kafka:0.34.0.RELEASE'
+
+    // implementation "io.eventuate.tram.sagas:eventuate-tram-sagas-spring-orchestration-simple-dsl-starter"
+	// implementation 'io.eventuate.tram.sagas:eventuate-tram-sagas-spring-orchestration-simple-dsl:0.23.0.RELEASE'
+	implementation 'io.eventuate.tram.sagas:eventuate-tram-sagas-spring-orchestration-simple-dsl-starter:0.23.0.RELEASE'
+
+
+	implementation 'io.eventuate.tram.core:eventuate-tram-spring-optimistic-locking:0.34.0.RELEASE'
+	implementation 'io.eventuate.tram.core:eventuate-tram-optimistic-locking-common-test:0.34.0.RELEASE'
+
+
+    // implementation "io.eventuate.tram.core:eventuate-tram-spring-commands"
+	implementation 'io.eventuate.tram.core:eventuate-tram-spring-commands:0.34.0.RELEASE'
+
+    // implementation "io.eventuate.tram.core:eventuate-tram-spring-flyway"
+    // runtimeOnly "io.eventuate.tram.sagas:eventuate-tram-sagas-spring-flyway"
+
+    implementation "io.eventuate.common:eventuate-common-jdbc"
+    implementation "io.eventuate.tram.core:eventuate-tram-spring-logging:+"
+
+
+
+    testImplementation "io.eventuate.tram.sagas:eventuate-tram-sagas-spring-testing-support"
+    testImplementation "io.eventuate.tram.sagas:eventuate-tram-sagas-spring-in-memory"
+    testImplementation "io.eventuate.tram.core:eventuate-tram-spring-testing-support-cloud-contract"
+
+    testImplementation "eventuate-tram-sagas-examples-customers-and-orders.customer-service:customer-service-messaging-stubs:0.1.0-SNAPSHOT:stubs"
+
 }
 
 dependencyManagement {
