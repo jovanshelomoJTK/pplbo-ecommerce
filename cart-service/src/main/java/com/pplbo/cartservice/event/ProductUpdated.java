@@ -1,12 +1,11 @@
 package com.pplbo.cartservice.event;
 
 public class ProductUpdated {
-    public String productId;
-    public String productName;
-    public double price;
-    public int stock;
+    private String productId;
+    private String productName;
+    private double price;
+    private int stock;
 
-    // Constructors
     public ProductUpdated() {}
 
     public ProductUpdated(String productId, String productName, double price, int stock) {
@@ -16,7 +15,6 @@ public class ProductUpdated {
         this.stock = stock;
     }
 
-    // Getters and Setters
     public String getProductId() {
         return productId;
     }

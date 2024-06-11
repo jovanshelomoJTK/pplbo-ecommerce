@@ -1,11 +1,10 @@
 package com.pplbo.cartservice.event;
 
 public class OrderApproved {
-    private String userId;  // Tambahkan field userId
+    private String userId;
     private String productId;
     private int quantity;
 
-    // Constructors
     public OrderApproved() {}
 
     public OrderApproved(String userId, String productId, int quantity) {
@@ -14,7 +13,6 @@ public class OrderApproved {
         this.quantity = quantity;
     }
 
-    // Getters and Setters
     public String getUserId() {
         return userId;
     }

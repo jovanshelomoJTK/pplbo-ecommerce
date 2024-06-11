@@ -1,27 +1,29 @@
 name: pplbo-ecommerce
 services:
   zookeeper:
-    image: 'confluentinc/cp-zookeeper:6.2.0'
+    image: confluentinc/cp-zookeeper:latest
+    ports:
+      - 2181:2181
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
-      KAFKA_HEAP_OPTS: -Xmx64m
+    networks:
+      - pplbo-network
 
   kafka:
-    image: 'confluentinc/cp-kafka:6.2.0'
+    image: confluentinc/cp-kafka:latest
     depends_on:
       - zookeeper
     ports:
       - 9092:9092
     environment:
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_HEAP_OPTS: -Xmx192m
-      KAFKA_MESSAGE_MAX_BYTES: 10485760
-      KAFKA_LOG4J_LOGGERS: "kafka.controller=TRACE,kafka.log=DEBUG,kafka.network.RequestChannel$=DEBUG"
+    networks:
+      - pplbo-network
 
   kafka-gui:
     image: quay.io/cloudhut/kowl:master-1d07695
@@ -31,7 +33,10 @@ services:
       - kafka
     environment:
       KAFKA_BROKERS: kafka:9092
-
+    networks:
+      - pplbo-network
+      
+  # Database for all services
   db:
     image: postgres:15
     restart: unless-stopped
@@ -207,6 +212,8 @@ services:
     depends_on:
       - service-registry
       - db
+      - kafka
+      - zookeeper
     ports:
       - "8086:8080"
     networks:
@@ -215,7 +222,7 @@ services:
   # this container supposed to be off after the migration finished
   # so don't worry if you see it off after several seconds
   flyway:
-    image: flyway/flyway:6.4.4
+    image: flyway/flyway
     entrypoint: ["bash"]
     command: >
       -c "/flyway/flyway -url=jdbc:postgresql://db:5432/cart -user=${POSTGRES_USER} -password=${POSTGRES_PASSWORD} -locations=filesystem:/flyway/sql/cart -connectRetries=10 migrate && 
@@ -232,7 +239,6 @@ services:
 
 networks:
   pplbo-network:
-    driver: bridge
 
 volumes:
   pplbo-volume:
