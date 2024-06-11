@@ -118,7 +118,7 @@ public class PromotionService {
 
                 // Check if start date is now or in the past, then publish event
                 if (promotion.getStartDate().compareTo(new Date()) <= 0) {
-                    kafkaProducer.sendMessage(new DiscountPromotionActivatedEvent(promotion));
+                    kafkaProducer.sendMessage(new DiscountPromotionActivatedEvent(promotion.getDiscountPercentage(),promotion.getProductIds()));
                 }
 
                 return promotion;
@@ -140,7 +140,7 @@ public class PromotionService {
 
             promotion.removeProduct(productId);
             promotionRepository.save(promotion);
-            kafkaProducer.sendMessage(new DiscountPromotionExpiredEvent(promotion));
+            kafkaProducer.sendMessage(new DiscountPromotionExpiredEvent(promotion.getDiscountPercentage(),promotion.getProductIds()));
 
             return promotion;
         }
@@ -167,23 +167,6 @@ public class PromotionService {
 
         Promotion promotion = getPromotionById(id);
         if (promotion != null) {
-            Date currentDate = resetTime(new Date()); // Mendapatkan tanggal saat ini tanpa waktu
-
-            // Mengubah status berdasarkan kondisi yang diberikan menggunakan compareTo
-            if (promotion.getStatus() == PromotionStatus.ACTIVE && resetTime(startDate).compareTo(currentDate) > 0
-                    && resetTime(startDate).compareTo(endDate) < 0) {
-                promotion.setStatus(PromotionStatus.INACTIVE);
-            } else if (promotion.getStatus() == PromotionStatus.EXPIRED
-                    && resetTime(startDate).compareTo(currentDate) <= 0
-                    && resetTime(endDate).compareTo(currentDate) > 0) {
-                promotion.setStatus(PromotionStatus.ACTIVE);
-            } else if (promotion.getStatus() == PromotionStatus.INACTIVE
-                    && resetTime(startDate).compareTo(currentDate) == 0) {
-                promotion.setStatus(PromotionStatus.ACTIVE);
-            } else if (resetTime(endDate).compareTo(currentDate) < 0) {
-                promotion.setStatus(PromotionStatus.EXPIRED);
-            }
-
             promotion.setStartDate(startDate);
             promotion.setEndDate(endDate);
             promotionRepository.save(promotion);
@@ -199,14 +182,14 @@ public class PromotionService {
         Date currentDate = new Date();
 
         for (Promotion promotion : promotions) {
-            if (promotion.getStartDate() != null && promotion.getStartDate().compareTo(currentDate) <= 0 &&
+            if (promotion.getStartDate() != null && currentDate.compareTo(promotion.getStartDate()) >= 0 && currentDate.compareTo(promotion.getEndDate()) < 0 &&
                     !PromotionStatus.ACTIVE.equals(promotion.getStatus())) {
                 promotion.setStatus(PromotionStatus.ACTIVE);
                 promotionRepository.save(promotion);
 
                 // send event that discount has been activated
                 if (PromotionType.DISCOUNT.equals(promotion.getType())) {
-                    kafkaProducer.sendMessage(new DiscountPromotionActivatedEvent(promotion));
+                    kafkaProducer.sendMessage(new DiscountPromotionActivatedEvent(promotion.getDiscountPercentage(),promotion.getProductIds()));
                 }
             }
         }
@@ -219,14 +202,14 @@ public class PromotionService {
         Date currentDate = new Date();
 
         for (Promotion promotion : promotions) {
-            if (promotion.getEndDate() != null && promotion.getEndDate().compareTo(currentDate) < 0 &&
+            if (promotion.getEndDate() != null && currentDate.compareTo(promotion.getEndDate()) >= 0 &&
                     !PromotionStatus.EXPIRED.equals(promotion.getStatus())) {
                 promotion.setStatus(PromotionStatus.EXPIRED);
                 promotionRepository.save(promotion);
 
                 // send event that discount has been expired
                 if ((PromotionType.DISCOUNT.equals(promotion.getType()))) {
-                    kafkaProducer.sendMessage(new DiscountPromotionExpiredEvent(promotion));
+                    kafkaProducer.sendMessage(new DiscountPromotionExpiredEvent(promotion.getDiscountPercentage(),promotion.getProductIds()));
                 }
             }
         }

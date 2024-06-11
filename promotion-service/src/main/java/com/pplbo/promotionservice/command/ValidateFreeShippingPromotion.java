@@ -18,4 +18,9 @@ public class ValidateFreeShippingPromotion {
     public Long getPromotionId(){
         return promotionId;
     }
+
+    @Override
+    public String toString() {
+        return "promotionId="+promotionId;
+    }
 }

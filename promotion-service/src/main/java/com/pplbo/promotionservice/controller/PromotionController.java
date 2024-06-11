@@ -2,7 +2,6 @@ package com.pplbo.promotionservice.controller;
 
 import com.pplbo.promotionservice.command.ValidateFreeShippingPromotion;
 import com.pplbo.promotionservice.dto.CreatePromotionRequest;
-import com.pplbo.promotionservice.event.DiscountPromotionActivatedEvent;
 import com.pplbo.promotionservice.kafka.KafkaProducerService;
 import com.pplbo.promotionservice.model.Promotion;
 import com.pplbo.promotionservice.service.PromotionService;
@@ -13,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 

@@ -1,7 +1,9 @@
 package com.pplbo.promotionservice.event;
 
-import com.pplbo.promotionservice.model.Promotion;
+import java.util.List;
 
 public interface PromotionEvent {
-    public Promotion getPromotion();
+    public double getDiscountPercentage();
+
+    public List<Long> getProductIds();
 }

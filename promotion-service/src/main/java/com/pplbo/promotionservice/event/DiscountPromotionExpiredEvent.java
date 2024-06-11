@@ -1,27 +1,35 @@
 package com.pplbo.promotionservice.event;
 
-import com.pplbo.promotionservice.model.Promotion;
+import java.util.List;
 
 public class DiscountPromotionExpiredEvent implements PromotionEvent {
     private String message = "Discount Expired";
-    private final Promotion promotion;
+    private final double discountPercentage;
+    private final List<Long> productIds;
 
-    public DiscountPromotionExpiredEvent(Promotion promotion) {
-        this.promotion = promotion;
+    public DiscountPromotionExpiredEvent(double discountPercentage, List<Long> productIds) {
+        this.discountPercentage = discountPercentage;
+        this.productIds = productIds;
     }
 
     public String getMessage() {
         return message;
     }
 
-    public Promotion getPromotion() {
-        return promotion;
+    public double getDiscountPercentage() {
+        return discountPercentage;
+    }
+
+    public List<Long> getProductIds() {
+        return productIds;
     }
 
     @Override
     public String toString() {
-        return "DiscountPromotionActivatedEvent{" +
-                "promotion=" + promotion +
+        return "DiscountPromotionExpiredEvent{" +
+                "message=" + message +
+                "discountPercentage="+ discountPercentage +
+                "productIds="+ productIds +
                 '}';
     }
 }
