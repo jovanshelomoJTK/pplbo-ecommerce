@@ -3,8 +3,6 @@ package com.pplbo.paymentservice.model;
 import java.util.UUID;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -30,11 +28,12 @@ public class Payment {
     public Payment() {
     }
 
-    public Payment(String kodePayment, Long customerId, Long orderId, String status, PaymentMethod paymentMethod) {
+    public Payment(String kodePayment, Long customerId, Long orderId, String status, Double totalPrice, PaymentMethod paymentMethod) {
         this.kodePayment = kodePayment;
         this.customerId = customerId;
         this.orderId = orderId;
         this.status = status;
+        this.totalPrice = totalPrice;
         this.paymentMethod = paymentMethod;
     }
 

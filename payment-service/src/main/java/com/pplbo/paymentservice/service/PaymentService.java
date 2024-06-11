@@ -28,6 +28,7 @@ public class PaymentService {
         payment.setCustomerId(paymentRequestDTO.getCustomerId());
         payment.setOrderId(paymentRequestDTO.getOrderId());
         payment.setStatus("PENDING");
+        payment.setTotalPrice(paymentRequestDTO.getTotalPrice());
         return paymentRepository.save(payment);
     }
 
