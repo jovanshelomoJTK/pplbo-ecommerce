@@ -3,7 +3,7 @@ package com.pplbo.promotionservice.event;
 import com.pplbo.promotionservice.model.Promotion;
 
 public class DiscountPromotionExpiredEvent implements PromotionEvent {
-    private String message = "Discount Activated";
+    private String message = "Discount Expired";
     private final Promotion promotion;
 
     public DiscountPromotionExpiredEvent(Promotion promotion) {
