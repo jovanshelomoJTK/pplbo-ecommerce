@@ -2,7 +2,8 @@ package com.pplbo.paymentservice.service;
 
 import com.pplbo.paymentservice.dto.PaymentRequestDTO;
 import com.pplbo.paymentservice.event.OrderCreatedEvent;
-import com.pplbo.paymentservice.event.PaymentStatusUpdatedEvent;
+import com.pplbo.paymentservice.event.PaymentRequestEvent;
+import com.pplbo.paymentservice.event.PaymentEvent;
 import com.pplbo.paymentservice.kafka.KafkaProducerService;
 import com.pplbo.paymentservice.model.Payment;
 import com.pplbo.paymentservice.model.PaymentMethod;
@@ -36,23 +37,14 @@ public class PaymentService {
             Payment payment = paymentOptional.get();
             payment.setPaymentMethod(paymentMethod);
 
-            // Total Dummy
-            Integer total = 20000;
-            if (saldo >= total) {
-                    payment.setStatus("PAID");
+            if (saldo >= payment.getTotalPrice()) {
+                payment.setStatus("PAID");
             } else {
                 payment.setStatus("FAIL");
             }
-            // if (saldo >= payment.getTotal()) {
-            //         payment.setStatus("PAID");
-            // } else {
-            //     payment.setStatus("FAIL");
-            // }
-
-            // Publish event to notify that payment status has been updated
             
-            PaymentStatusUpdatedEvent paymentStatusUpdatedEvent = new PaymentStatusUpdatedEvent(payment.getOrderId(), "PAID");
-            kafkaProducerService.sendPaymentStatusUpdateEvent(paymentStatusUpdatedEvent);
+            PaymentEvent paymentStatusUpdatedEvent = new PaymentEvent(payment.getOrderId(), payment.getStatus(), payment.getKodePayment());
+            kafkaProducerService.sendPaymentUpdateEvent(paymentStatusUpdatedEvent);
             return paymentRepository.save(payment);
         } else {
             throw new RuntimeException("Payment not found");
@@ -78,18 +70,27 @@ public class PaymentService {
         }
     }
 
-    public void processPayment(OrderCreatedEvent event) {
-        PaymentRequestDTO paymentRequestDTO = new PaymentRequestDTO();
-        paymentRequestDTO.setCustomerId(event.getCustomerId().intValue()); 
-        paymentRequestDTO.setOrderId(event.getOrderId());
+    // public void processPayment(OrderCreatedEvent event) {
+    //     PaymentRequestDTO paymentRequestDTO = new PaymentRequestDTO();
+    //     paymentRequestDTO.setCustomerId(event.getCustomerId()); 
+    //     paymentRequestDTO.setOrderId(event.getOrderId());
         
-        Payment payment = createPayment(paymentRequestDTO);
+    //     Payment payment = createPayment(paymentRequestDTO);
 
-        payment.setStatus("PAID");
+    //     payment.setStatus("PAID");
+    //     paymentRepository.save(payment);
+
+    //     // Publish event to notify that payment status has been updated
+    //     PaymentStatusUpdatedEvent paymentStatusUpdatedEvent = new PaymentStatusUpdatedEvent(event.getOrderId(), "PAID");
+    //     kafkaProducerService.sendPaymentStatusUpdateEvent(paymentStatusUpdatedEvent);
+    // }
+
+    public void processPayment(PaymentRequestEvent event) {
+        Payment payment = new Payment();
+        payment.setOrderId(event.getOrderId());
+        payment.setCustomerId(event.getCustomerId());
+        payment.setTotalPrice(event.getTotalPrice());
+        payment.setStatus("PENDING");
         paymentRepository.save(payment);
-
-        // Publish event to notify that payment status has been updated
-        PaymentStatusUpdatedEvent paymentStatusUpdatedEvent = new PaymentStatusUpdatedEvent(event.getOrderId(), "PAID");
-        kafkaProducerService.sendPaymentStatusUpdateEvent(paymentStatusUpdatedEvent);
     }
 }

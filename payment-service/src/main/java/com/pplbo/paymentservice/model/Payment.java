@@ -18,9 +18,10 @@ public class Payment {
 
     @Id
     private String kodePayment;
-    private Integer customerId;
+    private Long customerId;
     private Long orderId;
     private String status;
+    private Double totalPrice;
 
     @ManyToOne
     @JoinColumn(name = "payment_method_id", nullable = true)
@@ -29,7 +30,7 @@ public class Payment {
     public Payment() {
     }
 
-    public Payment(String kodePayment, Integer customerId, Long orderId, String status, PaymentMethod paymentMethod) {
+    public Payment(String kodePayment, Long customerId, Long orderId, String status, PaymentMethod paymentMethod) {
         this.kodePayment = kodePayment;
         this.customerId = customerId;
         this.orderId = orderId;
@@ -49,7 +50,11 @@ public class Payment {
         return kodePayment;
     }
 
-    public Integer getCustomerId() {
+    public Double getTotalPrice() {
+        return totalPrice;
+    }
+
+    public Long getCustomerId() {
         return customerId;
     }
 
@@ -69,7 +74,7 @@ public class Payment {
         this.kodePayment = kodePayment;
     }
 
-    public void setCustomerId(Integer customerId) {
+    public void setCustomerId(Long customerId) {
         this.customerId = customerId;
     }
 
@@ -83,5 +88,9 @@ public class Payment {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public void setTotalPrice(Double totalPrice) {
+        this.totalPrice = totalPrice;
     }
 }

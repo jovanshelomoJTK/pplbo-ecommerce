@@ -1,19 +1,25 @@
 package com.pplbo.paymentservice.event;
 
-public class PaymentStatusUpdatedEvent {
+public class PaymentEvent {
     private Long orderId;
     private String status;
+    private String kodePayment;
 
-    public PaymentStatusUpdatedEvent() {
+    public PaymentEvent() {
     }
 
-    public PaymentStatusUpdatedEvent(Long orderId, String status) {
+    public PaymentEvent(Long orderId, String status, String kodePayment) {
         this.orderId = orderId;
         this.status = status;
+        this.kodePayment = kodePayment;
     }
 
     public Long getOrderId() {
         return orderId;
+    }
+
+    public String getKodePayment() {
+        return kodePayment;
     }
 
     public void setOrderId(Long orderId) {
@@ -26,5 +32,9 @@ public class PaymentStatusUpdatedEvent {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public void setKodePayment(String kodePayment) {
+        this.kodePayment = kodePayment;
     }
 }

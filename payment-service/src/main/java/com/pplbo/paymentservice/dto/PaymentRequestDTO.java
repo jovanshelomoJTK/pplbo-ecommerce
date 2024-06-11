@@ -1,16 +1,16 @@
 package com.pplbo.paymentservice.dto;
 
 public class PaymentRequestDTO {
-    private Integer customerId;
+    private Long customerId;
     private Long orderId;
 
     // Getters and Setters
 
-    public Integer getCustomerId() {
+    public Long getCustomerId() {
         return customerId;
     }
 
-    public void setCustomerId(Integer customerId) {
+    public void setCustomerId(Long customerId) {
         this.customerId = customerId;
     }
 

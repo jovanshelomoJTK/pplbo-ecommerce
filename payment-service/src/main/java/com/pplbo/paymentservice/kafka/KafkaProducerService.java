@@ -1,6 +1,6 @@
 package com.pplbo.paymentservice.kafka;
 
-import com.pplbo.paymentservice.event.PaymentStatusUpdatedEvent;
+import com.pplbo.paymentservice.event.PaymentEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +15,8 @@ public class KafkaProducerService {
     @Autowired
     private KafkaTemplate<String, Object> kafkaTemplate;
 
-    public void sendPaymentStatusUpdateEvent(PaymentStatusUpdatedEvent event) {
+    public void sendPaymentUpdateEvent(PaymentEvent event) {
         LOGGER.info(String.format("Payment status update event => %s", event.toString()));
-        kafkaTemplate.send("payment-status-update-topic", event);
+        kafkaTemplate.send("paymentReplyTopic", event);
     }
 }
