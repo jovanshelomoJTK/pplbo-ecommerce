@@ -22,19 +22,25 @@ import com.pplbo.orderservice.repository.OrderRepository;
 import com.pplbo.orderservice.event.OrderCreateEvent;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.kafka.annotation.KafkaListener;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class OrderService {
 
-    private static final String TOPIC = "test-topic";
+    private static final String PRODUCT_REQUEST_TOPIC = "productRequestEvent";
+    private static final String PAYMENT_REQUEST_TOPIC = "paymentRequestEvent";
 
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
     
     @Autowired
     private OrderRepository orderRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper; // Define or Autowire the ObjectMapper
+    
 
     // @Autowired
     // private PaymentClient paymentClient;
@@ -65,10 +71,24 @@ public class OrderService {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             String message = objectMapper.writeValueAsString(event);
-            kafkaTemplate.send(TOPIC, message);
+            kafkaTemplate.send(PRODUCT_REQUEST_TOPIC, message);
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    // @KafkaListener(topics = "orderReply", groupId = "group_id")
+    public void handleReply(OrderCreateEvent event) {
+        if(event.getOrder().orderStatus().equals("PESANAN_DIBUAT")){
+            try {
+                ObjectMapper objectMapper = new ObjectMapper();
+                String message = objectMapper.writeValueAsString(event);
+                kafkaTemplate.send(PAYMENT_REQUEST_TOPIC, message);      
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("TEST HALO ADA GA : " + event.getOrder());        
     }
 
     public void deleteById(Long id) {

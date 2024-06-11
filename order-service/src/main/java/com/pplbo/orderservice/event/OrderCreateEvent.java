@@ -6,6 +6,9 @@ import com.pplbo.orderservice.dto.OrderResponse;
 public class OrderCreateEvent {
     private OrderResponse order;
 
+    public OrderCreateEvent() {
+    }
+
     public OrderCreateEvent(OrderResponse order) {
         this.order = order;
     }
