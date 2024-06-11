@@ -1,5 +1,7 @@
 package com.pplbo.promotionservice.event;
 
-public interface PromotionEvent {
+import com.pplbo.promotionservice.model.Promotion;
 
+public interface PromotionEvent {
+    public Promotion getPromotion();
 }

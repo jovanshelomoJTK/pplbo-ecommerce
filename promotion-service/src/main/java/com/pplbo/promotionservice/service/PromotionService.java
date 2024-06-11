@@ -6,7 +6,6 @@ import com.pplbo.promotionservice.kafka.KafkaProducerService;
 import com.pplbo.promotionservice.model.Promotion;
 import com.pplbo.promotionservice.repository.PromotionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,9 +19,6 @@ import java.util.Optional;
 
 @Service
 public class PromotionService {
-
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
 
     @Autowired
     private PromotionRepository promotionRepository;
@@ -145,7 +141,7 @@ public class PromotionService {
             
             promotion.removeProduct(productId);
             promotionRepository.save(promotion);
-            eventPublisher.publishEvent(new DiscountPromotionExpiredEvent(promotion));
+            kafkaProducer.sendMessage(new DiscountPromotionExpiredEvent(promotion));
     
             return promotion;
         }
@@ -207,7 +203,7 @@ public class PromotionService {
                 promotionRepository.save(promotion);
 
                 if ((PromotionType.DISCOUNT.equals(promotion.getType()))) {
-                    eventPublisher.publishEvent(new DiscountPromotionActivatedEvent(promotion));
+                    kafkaProducer.sendMessage(new DiscountPromotionActivatedEvent(promotion));
                 }
             }
         }
@@ -225,7 +221,7 @@ public class PromotionService {
                 promotion.setStatus(PromotionStatus.EXPIRED);
                 promotionRepository.save(promotion);
                 if ((PromotionType.DISCOUNT.equals(promotion.getType()))) {
-                    eventPublisher.publishEvent(new DiscountPromotionExpiredEvent(promotion));
+                    kafkaProducer.sendMessage(new DiscountPromotionExpiredEvent(promotion));
                 }
             }
         }

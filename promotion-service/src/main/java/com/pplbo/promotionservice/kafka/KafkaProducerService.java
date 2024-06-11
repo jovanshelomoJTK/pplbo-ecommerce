@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pplbo.promotionservice.event.PromotionEvent;
 
 @Service
@@ -18,17 +17,11 @@ public class KafkaProducerService {
     private KafkaTemplate<String, PromotionEvent> kafkaTemplate;
 
     public void sendMessage(PromotionEvent event) {
-        logger.info("Sending message: {}", event);
-        kafkaTemplate.send(TOPIC, event);
+        try {
+            logger.info("Sending message: {}", event);
+            kafkaTemplate.send(TOPIC, event);
+        } catch (Exception e) {
+            logger.error("Error sending message: {}", e.getMessage(), e);
+        }
     }
-
-    // public void sendPromotionEvent(Event event) {
-    //     try {
-    //         ObjectMapper objectMapper = new ObjectMapper();
-    //         String message = objectMapper.writeValueAsString(event);
-    //         kafkaTemplate.send(TOPIC, message);
-    //     } catch (Exception e) {
-    //         e.printStackTrace();
-    //     }
-    // }
 }
