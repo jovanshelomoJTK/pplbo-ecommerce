@@ -41,7 +41,8 @@ public class PromotionService {
         }
 
         // Ensure end date is after start date
-        if (promotion.getEndDate() != null && resetTime(promotion.getEndDate()).before(resetTime(promotion.getStartDate()))) {
+        if (promotion.getEndDate() != null
+                && resetTime(promotion.getEndDate()).before(resetTime(promotion.getStartDate()))) {
             throw new IllegalArgumentException("End date must be later than start date");
         }
 
@@ -54,7 +55,8 @@ public class PromotionService {
             case DISCOUNT:
                 // Ensure discount percentage is greater than 0
                 if (promotion.getDiscountPercentage() <= 0) {
-                    throw new IllegalArgumentException("Discount percentage must be greater than 0 for discount promotions");
+                    throw new IllegalArgumentException(
+                            "Discount percentage must be greater than 0 for discount promotions");
                 }
                 break;
             case FREESHIPPING:
@@ -68,8 +70,6 @@ public class PromotionService {
         Promotion savedPromotion = promotionRepository.save(promotion);
         return savedPromotion;
     }
-
-    
 
     public Promotion getPromotionById(Long id) {
         Optional<Promotion> promotion = promotionRepository.findById(id);
@@ -97,10 +97,10 @@ public class PromotionService {
         Promotion promotion = getPromotionById(id);
         if (promotion != null) {
             promotionRepository.deleteById(id);
-        }else{
+        } else {
             throw new IllegalArgumentException("Promotion not found for id: " + id);
         }
-       
+
     }
 
     @Transactional
@@ -112,15 +112,15 @@ public class PromotionService {
                 if (promotion.getStatus() == PromotionStatus.EXPIRED) {
                     throw new IllegalArgumentException("Promosi berstatus Expire sehingga tidak dapat diubah");
                 }
-    
+
                 promotion.applyPromotion(productId);
                 promotionRepository.save(promotion);
-    
+
                 // Check if start date is now or in the past, then publish event
                 if (promotion.getStartDate().compareTo(new Date()) <= 0) {
                     kafkaProducer.sendMessage(new DiscountPromotionActivatedEvent(promotion));
                 }
-    
+
                 return promotion;
             }
             throw new IllegalArgumentException("Promotion not found for id: " + id);
@@ -128,7 +128,6 @@ public class PromotionService {
             throw new IllegalArgumentException("Invalid product ID");
         }
     }
-    
 
     @Transactional
     public Promotion removeProductFromPromotion(Long id, Long productId) {
@@ -138,48 +137,53 @@ public class PromotionService {
             if (!productIds.contains(productId)) {
                 throw new IllegalArgumentException("Product not found for productId: " + productId);
             }
-            
+
             promotion.removeProduct(productId);
             promotionRepository.save(promotion);
             kafkaProducer.sendMessage(new DiscountPromotionExpiredEvent(promotion));
-    
+
             return promotion;
         }
         throw new IllegalArgumentException("Promotion not found for id: " + id);
     }
-    
-    
 
-    // @Transactional
-    // public void applyFreeShipping(Long id, Order order){
-    // Promotion promotion = getPromotionById(id);
-    // if (promotion != null) {
-    // order.setFeeShipping(0);
-    // }
-    // }
+    @Transactional
+    public boolean validateFreeShippingPromotion(Long id) {
+        Promotion promotion = getPromotionById(id);
+        if (promotion != null && PromotionType.FREESHIPPING.equals(promotion.getType()) && PromotionStatus.ACTIVE.equals(promotion.getStatus())) {
+            return true;
+        }
+
+        return false;
+    }
 
     @Transactional
     public Promotion schedulePromotion(Long id, Date startDate, Date endDate) {
         // Mengecek apakah endDate lebih awal dari startDate
         if (endDate.before(startDate)) {
-            throw new IllegalArgumentException("Invalid start date and end date: end date cannot be earlier than start date.");
+            throw new IllegalArgumentException(
+                    "Invalid start date and end date: end date cannot be earlier than start date.");
         }
-    
+
         Promotion promotion = getPromotionById(id);
         if (promotion != null) {
             Date currentDate = resetTime(new Date()); // Mendapatkan tanggal saat ini tanpa waktu
-    
+
             // Mengubah status berdasarkan kondisi yang diberikan menggunakan compareTo
-            if (promotion.getStatus() == PromotionStatus.ACTIVE && resetTime(startDate).compareTo(currentDate) > 0 && resetTime(startDate).compareTo(endDate) < 0) {
+            if (promotion.getStatus() == PromotionStatus.ACTIVE && resetTime(startDate).compareTo(currentDate) > 0
+                    && resetTime(startDate).compareTo(endDate) < 0) {
                 promotion.setStatus(PromotionStatus.INACTIVE);
-            } else if (promotion.getStatus() == PromotionStatus.EXPIRED && resetTime(startDate).compareTo(currentDate) <= 0 && resetTime(endDate).compareTo(currentDate) > 0) {
+            } else if (promotion.getStatus() == PromotionStatus.EXPIRED
+                    && resetTime(startDate).compareTo(currentDate) <= 0
+                    && resetTime(endDate).compareTo(currentDate) > 0) {
                 promotion.setStatus(PromotionStatus.ACTIVE);
-            } else if (promotion.getStatus() == PromotionStatus.INACTIVE && resetTime(startDate).compareTo(currentDate) == 0) {
+            } else if (promotion.getStatus() == PromotionStatus.INACTIVE
+                    && resetTime(startDate).compareTo(currentDate) == 0) {
                 promotion.setStatus(PromotionStatus.ACTIVE);
             } else if (resetTime(endDate).compareTo(currentDate) < 0) {
                 promotion.setStatus(PromotionStatus.EXPIRED);
             }
-    
+
             promotion.setStartDate(startDate);
             promotion.setEndDate(endDate);
             promotionRepository.save(promotion);
@@ -187,8 +191,6 @@ public class PromotionService {
         }
         throw new IllegalArgumentException("Promotion not found for id: " + id);
     }
-    
-    
 
     @Scheduled(fixedRate = 60000)
     @Transactional
@@ -237,7 +239,7 @@ public class PromotionService {
         return true;
     }
 
-        private Date resetTime(Date date) {
+    private Date resetTime(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         calendar.set(Calendar.HOUR_OF_DAY, 0);
@@ -246,6 +248,5 @@ public class PromotionService {
         calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTime();
     }
-
 
 }
