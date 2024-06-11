@@ -16,7 +16,7 @@ public class KafkaConsumerService {
     @Autowired
     private PaymentService paymentService;
 
-    @KafkaListener(topics = "order-topic", groupId = "payment-group")
+    @KafkaListener(topics = "order-topic", groupId = "payment")
     public void consumeOrderCreatedEvent(OrderCreatedEvent event) {
         LOGGER.info(String.format("Order created event received: %s", event));
         paymentService.processPayment(event);

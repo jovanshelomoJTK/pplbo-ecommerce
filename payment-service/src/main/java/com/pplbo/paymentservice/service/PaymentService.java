@@ -48,6 +48,11 @@ public class PaymentService {
             // } else {
             //     payment.setStatus("FAIL");
             // }
+
+            // Publish event to notify that payment status has been updated
+            
+            PaymentStatusUpdatedEvent paymentStatusUpdatedEvent = new PaymentStatusUpdatedEvent(payment.getOrderId(), "PAID");
+            kafkaProducerService.sendPaymentStatusUpdateEvent(paymentStatusUpdatedEvent);
             return paymentRepository.save(payment);
         } else {
             throw new RuntimeException("Payment not found");
@@ -76,7 +81,7 @@ public class PaymentService {
     public void processPayment(OrderCreatedEvent event) {
         PaymentRequestDTO paymentRequestDTO = new PaymentRequestDTO();
         paymentRequestDTO.setCustomerId(event.getCustomerId().intValue()); 
-        paymentRequestDTO.setOrderId(event.getOrderId().intValue());
+        paymentRequestDTO.setOrderId(event.getOrderId());
         
         Payment payment = createPayment(paymentRequestDTO);
 

@@ -19,7 +19,7 @@ public class Payment {
     @Id
     private String kodePayment;
     private Integer customerId;
-    private Integer orderId;
+    private Long orderId;
     private String status;
 
     @ManyToOne
@@ -29,7 +29,7 @@ public class Payment {
     public Payment() {
     }
 
-    public Payment(String kodePayment, Integer customerId, Integer orderId, String status, PaymentMethod paymentMethod) {
+    public Payment(String kodePayment, Integer customerId, Long orderId, String status, PaymentMethod paymentMethod) {
         this.kodePayment = kodePayment;
         this.customerId = customerId;
         this.orderId = orderId;
@@ -53,7 +53,7 @@ public class Payment {
         return customerId;
     }
 
-    public Integer getOrderId() {
+    public Long getOrderId() {
         return orderId;
     }
 
@@ -73,7 +73,7 @@ public class Payment {
         this.customerId = customerId;
     }
 
-    public void setOrderId(Integer orderId) {
+    public void setOrderId(Long orderId) {
         this.orderId = orderId;
     }
 
