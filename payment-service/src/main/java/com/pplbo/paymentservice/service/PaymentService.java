@@ -35,9 +35,8 @@ public class PaymentService {
         if (paymentOptional.isPresent()) {
             Payment payment = paymentOptional.get();
             payment.setPaymentMethod(paymentMethod);
-            // payment.setStatus("PAID");
 
-            // Total wawadukan
+            // Total Dummy
             Integer total = 20000;
             if (saldo >= total) {
                     payment.setStatus("PAID");
