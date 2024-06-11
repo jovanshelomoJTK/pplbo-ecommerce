@@ -14,16 +14,14 @@ public class OrderService {
 
     @Autowired
     private OrderRepository orderRepository;
-    public OrderService(OrderRepository orderRepository) {
-        this.orderRepository = orderRepository;
-    }
 
     public List<Order> getAllOrder() {
         return orderRepository.findAll();
     }
 
     public Order createOrder(OrderDetails orderDetails) {
-        // OrderCreatedEvent orderCreatedEvent = new OrderCreatedEvent(order, order.getOrderStatus());
+        // OrderCreatedEvent orderCreatedEvent = new OrderCreatedEvent(order,
+        // order.getOrderStatus());
         // kafkaTemplate.send("order-topic", orderCreatedEvent);
         System.out.println("Order created event sent");
         Order order = Order.createOrder(orderDetails);
