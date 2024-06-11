@@ -17,4 +17,11 @@ public class DiscountPromotionExpiredEvent implements PromotionEvent {
     public Promotion getPromotion() {
         return promotion;
     }
+
+    @Override
+    public String toString() {
+        return "DiscountPromotionActivatedEvent{" +
+                "promotion=" + promotion +
+                '}';
+    }
 }

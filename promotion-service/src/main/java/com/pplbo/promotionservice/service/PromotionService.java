@@ -148,7 +148,7 @@ public class PromotionService {
     }
 
     @Transactional
-    public boolean validateFreeShippingPromotion(Long id) {
+    public Boolean validateFreeShippingPromotion(Long id) {
         Promotion promotion = getPromotionById(id);
         if (promotion != null && PromotionType.FREESHIPPING.equals(promotion.getType()) && PromotionStatus.ACTIVE.equals(promotion.getStatus())) {
             return true;
@@ -204,7 +204,8 @@ public class PromotionService {
                 promotion.setStatus(PromotionStatus.ACTIVE);
                 promotionRepository.save(promotion);
 
-                if ((PromotionType.DISCOUNT.equals(promotion.getType()))) {
+                // send event that discount has been activated
+                if (PromotionType.DISCOUNT.equals(promotion.getType())) {
                     kafkaProducer.sendMessage(new DiscountPromotionActivatedEvent(promotion));
                 }
             }
@@ -222,6 +223,8 @@ public class PromotionService {
                     !PromotionStatus.EXPIRED.equals(promotion.getStatus())) {
                 promotion.setStatus(PromotionStatus.EXPIRED);
                 promotionRepository.save(promotion);
+
+                // send event that discount has been expired
                 if ((PromotionType.DISCOUNT.equals(promotion.getType()))) {
                     kafkaProducer.sendMessage(new DiscountPromotionExpiredEvent(promotion));
                 }

@@ -1,6 +1,9 @@
 package com.pplbo.promotionservice.controller;
 
+import com.pplbo.promotionservice.command.ValidateFreeShippingPromotion;
 import com.pplbo.promotionservice.dto.CreatePromotionRequest;
+import com.pplbo.promotionservice.event.DiscountPromotionActivatedEvent;
+import com.pplbo.promotionservice.kafka.KafkaProducerService;
 import com.pplbo.promotionservice.model.Promotion;
 import com.pplbo.promotionservice.service.PromotionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +23,9 @@ public class PromotionController {
 
     @Autowired
     private PromotionService promotionService;
+
+    @Autowired
+    private KafkaProducerService kafkaProducer;
 
     @PostMapping
     public ResponseEntity<?> createPromotion(@RequestBody CreatePromotionRequest request) {
@@ -119,6 +125,11 @@ public class PromotionController {
             return new ResponseEntity<>("Failed to schedule promotion: " + e.getMessage(),
                     HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @PostMapping("/testKafka/{id}")
+    public void testKafka(@PathVariable Long id){
+        kafkaProducer.sendReply(new ValidateFreeShippingPromotion(id));
     }
     
     @ExceptionHandler(HttpMessageNotReadableException.class)
