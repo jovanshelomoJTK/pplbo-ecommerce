@@ -15,6 +15,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.pplbo.cartservice.kafka.KafkaSenderService;
+
 import java.util.List;
 
 @RestController
@@ -23,6 +25,9 @@ public class CartController {
 
     @Autowired
     CartService cartService;
+
+    @Autowired
+    private KafkaSenderService kafkaSenderService;
 
     @GetMapping("/")
     @AllowedRoles({ Role.CUSTOMER })
@@ -99,6 +104,12 @@ public class CartController {
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    @PostMapping("/sendOrderApprovedEvent")
+    public ResponseEntity<String> sendOrderApprovedEvent(@RequestBody OrderApproved orderApprovedEvent) {
+        kafkaSenderService.sendOrderApprovedMessage(orderApprovedEvent);
+        return ResponseEntity.ok("OrderApprovedEvent sent successfully.");
     }
 
     @PostMapping("/testConsumer")
