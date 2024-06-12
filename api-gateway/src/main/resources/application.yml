@@ -27,10 +27,15 @@ spring:
           uri: lb://promotion-service
           predicates:
             - Path=/promotion/**
+        - id: example-service
+          uri: lb://example-service
+          predicates:
+            - Path=/example/**
       globalcors:
         corsConfigurations:
           "[/**]":
-            allowedOrigins: "*"
+            allowedOriginPatterns:
+              - "*"
             allowedMethods:
               - GET
               - POST
