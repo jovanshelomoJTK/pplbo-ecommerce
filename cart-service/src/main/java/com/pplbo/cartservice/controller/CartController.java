@@ -1,14 +1,21 @@
 package com.pplbo.cartservice.controller;
 
-import com.pplbo.cartservice.model.Test;
+import com.pplbo.cartservice.dto.CartDTO;
+import com.pplbo.cartservice.event.ProductUpdated;
+import com.pplbo.cartservice.event.OrderApproved;
 import com.pplbo.cartservice.service.CartService;
-
-import java.util.List;
+import com.pplbo.cartservice.jwt.customannotations.AllowedRoles;
+import com.pplbo.cartservice.jwt.customannotations.UserDataFromToken;
+import com.pplbo.cartservice.jwt.model.JwtUserData;
+import com.pplbo.cartservice.jwt.model.JwtUserData.Role;
+import com.pplbo.cartservice.model.Cart;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/cart")
@@ -17,8 +24,98 @@ public class CartController {
     @Autowired
     CartService cartService;
 
-    @GetMapping("/test")
-    public List<Test> test() {
-        return cartService.getAllTests();
+    @GetMapping("/")
+    @AllowedRoles({ Role.CUSTOMER })
+    public ResponseEntity<List<Cart>> getCart(@UserDataFromToken JwtUserData userData) {
+        try {
+            List<Cart> cart = cartService.getCart(userData.getId());
+            return new ResponseEntity<>(cart, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/add")
+    @AllowedRoles({ Role.CUSTOMER })
+    public ResponseEntity<Cart> addItemToCart(@RequestBody CartDTO cart, @UserDataFromToken JwtUserData userData) {
+        try {
+            Cart newCart = cartService.addItemToCart(cart, userData.getId());
+            return new ResponseEntity<>(newCart, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @DeleteMapping("/remove/{productId}")
+    @AllowedRoles({ Role.CUSTOMER })
+    public ResponseEntity<Void> removeItemFromCart(@PathVariable String productId,
+            @UserDataFromToken JwtUserData userData) {
+        try {
+            cartService.removeItemFromCart(userData.getId(), productId);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @DeleteMapping("/remove")
+    @AllowedRoles({ Role.CUSTOMER })
+    public ResponseEntity<Void> removeAllItemsFromCart(@UserDataFromToken JwtUserData userData) {
+        try {
+            cartService.removeAllItemsFromCart(userData.getId());
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PutMapping("/updateQuantity/{productId}")
+    @AllowedRoles({ Role.CUSTOMER })
+    public ResponseEntity<Cart> updateQuantityItemInCart(@PathVariable String productId, @RequestParam int quantity, @UserDataFromToken JwtUserData userData) {
+        try {
+            Cart updatedCart = cartService.updateQuantityItemInCart(userData.getId(), productId, quantity);
+            return new ResponseEntity<>(updatedCart, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/total")
+    @AllowedRoles({ Role.CUSTOMER })
+    public ResponseEntity<Double> getTotal(@UserDataFromToken JwtUserData userData) {
+        try {
+            Double total = cartService.getTotal(userData.getId());
+            return new ResponseEntity<>(total, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/testConsumer")
+    public ResponseEntity<String> testConsumer(@RequestBody String eventType) {
+        try {
+            if ("ProductUpdated".equals(eventType)) {
+                ProductUpdated event = new ProductUpdated("test-product-id", "Test Product", 123.45, 50);
+                cartService.testHandleProductUpdated(event);
+            } else if ("OrderApproved".equals(eventType)) {
+                OrderApproved event = new OrderApproved("test-user-id", "test-product-id", 1);
+                cartService.testHandleOrderApproved(event);
+            } else {
+                return new ResponseEntity<>("Invalid event type", HttpStatus.BAD_REQUEST);
+            }
+            return new ResponseEntity<>("Event processed successfully", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }
