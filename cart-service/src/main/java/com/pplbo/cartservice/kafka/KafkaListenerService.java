@@ -1,14 +1,14 @@
 package com.pplbo.cartservice.kafka;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pplbo.cartservice.event.ProductUpdated;
 import com.pplbo.cartservice.event.OrderApproved;
 import com.pplbo.cartservice.model.Cart;
 import com.pplbo.cartservice.repository.CartRepository;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,17 +16,15 @@ import java.util.Optional;
 @Service
 public class KafkaListenerService {
 
+    private static final Logger logger = LoggerFactory.getLogger(KafkaListenerService.class);
+
     @Autowired
     private CartRepository cartRepository;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @KafkaListener(topics = "ProductUpdated", groupId = "cart-group")
-    public void handleProductUpdated(String message) {
+    @KafkaListener(topics = "ProductUpdated", groupId = "cart", containerFactory = "kafkaListenerContainerFactoryProduct")
+    public void handleProductUpdated(ProductUpdated event) {
         try {
-            ProductUpdated event = objectMapper.readValue(message, ProductUpdated.class);
-
+            logger.info("Consumed ProductUpdated event: {}", event);
             // Update product information in cart
             List<Cart> carts = cartRepository.findByProductId(event.getProductId());
             for (Cart cart : carts) {
@@ -35,20 +33,28 @@ public class KafkaListenerService {
                 cartRepository.save(cart);
             }
         } catch (Exception e) {
-            e.printStackTrace(); // Handle error appropriately
+            logger.error("Error consuming ProductUpdated event", e);
         }
     }
 
-    @KafkaListener(topics = "OrderApproved", groupId = "cart-group")
-    public void handleOrderApproved(String message) {
+    @KafkaListener(topics = "OrderApproved", groupId = "cart", containerFactory = "kafkaListenerContainerFactoryOrder")
+    public void handleOrderApproved(OrderApproved event) {
         try {
-            OrderApproved event = objectMapper.readValue(message, OrderApproved.class);
-
+            logger.info("Consumed OrderApproved event: {}", event);
             // Remove cart items based on order approval
             Optional<Cart> cart = cartRepository.findByUserIdAndProductId(event.getUserId(), event.getProductId());
             cart.ifPresent(cartRepository::delete);
         } catch (Exception e) {
-            e.printStackTrace(); // Handle error appropriately
+            logger.error("Error consuming OrderApproved event", e);
         }
+    }
+
+    // Dummy methods to test listeners
+    public void testHandleProductUpdated(ProductUpdated event) {
+        handleProductUpdated(event);
+    }
+
+    public void testHandleOrderApproved(OrderApproved event) {
+        handleOrderApproved(event);
     }
 }

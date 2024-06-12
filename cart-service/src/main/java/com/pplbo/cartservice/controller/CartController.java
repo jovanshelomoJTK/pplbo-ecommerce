@@ -1,9 +1,9 @@
 package com.pplbo.cartservice.controller;
 
 import com.pplbo.cartservice.dto.CartDTO;
+import com.pplbo.cartservice.event.ProductUpdated;
+import com.pplbo.cartservice.event.OrderApproved;
 import com.pplbo.cartservice.service.CartService;
-import com.pplbo.cartservice.event.ProductUpdated;      
-import com.pplbo.cartservice.kafka.KafkaSenderService;  
 import com.pplbo.cartservice.jwt.customannotations.AllowedRoles;
 import com.pplbo.cartservice.jwt.customannotations.UserDataFromToken;
 import com.pplbo.cartservice.jwt.model.JwtUserData;
@@ -23,9 +23,6 @@ public class CartController {
 
     @Autowired
     CartService cartService;
-
-    @Autowired
-    KafkaSenderService kafkaSenderService;
 
     @GetMapping("/")
     @AllowedRoles({ Role.CUSTOMER })
@@ -64,7 +61,7 @@ public class CartController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     @DeleteMapping("/remove")
     @AllowedRoles({ Role.CUSTOMER })
     public ResponseEntity<Void> removeAllItemsFromCart(@UserDataFromToken JwtUserData userData) {
@@ -104,16 +101,21 @@ public class CartController {
         }
     }
 
-    @GetMapping("/testKafkaProducer")
-    public ResponseEntity<String> testKafkaProducer() {
+    @PostMapping("/testConsumer")
+    public ResponseEntity<String> testConsumer(@RequestBody String eventType) {
         try {
-            // Ubah kode ini agar tidak menggunakan event dari KafkaListenerService
-            ProductUpdated event = new ProductUpdated("test-product-id", "Test Product", 123.45, 50);
-            kafkaSenderService.sendProductUpdatedMessage(event);
-            return new ResponseEntity<>("Message sent to Kafka", HttpStatus.OK);
+            if ("ProductUpdated".equals(eventType)) {
+                ProductUpdated event = new ProductUpdated("test-product-id", "Test Product", 123.45, 50);
+                cartService.testHandleProductUpdated(event);
+            } else if ("OrderApproved".equals(eventType)) {
+                OrderApproved event = new OrderApproved("test-user-id", "test-product-id", 1);
+                cartService.testHandleOrderApproved(event);
+            } else {
+                return new ResponseEntity<>("Invalid event type", HttpStatus.BAD_REQUEST);
+            }
+            return new ResponseEntity<>("Event processed successfully", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
 }

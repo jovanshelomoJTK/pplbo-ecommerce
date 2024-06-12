@@ -5,6 +5,9 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.pplbo.cartservice.event.ProductUpdated;
+import com.pplbo.cartservice.event.OrderApproved;
+import com.pplbo.cartservice.kafka.KafkaListenerService;
 import com.pplbo.cartservice.model.Cart;
 import com.pplbo.cartservice.dto.CartDTO;
 import com.pplbo.cartservice.repository.CartRepository;
@@ -16,6 +19,9 @@ public class CartService {
 
     @Autowired
     private CartRepository cartRepository;
+
+    @Autowired
+    private KafkaListenerService kafkaListenerService;
 
     public List<Cart> getCart(String userId) {
         return cartRepository.findByUserId(userId);
@@ -80,7 +86,12 @@ public class CartService {
         return cart.stream().mapToDouble(product -> product.getPrice() * product.getQuantity()).sum();
     }
 
+    // Methods to test Kafka listeners
+    public void testHandleProductUpdated(ProductUpdated event) {
+        kafkaListenerService.testHandleProductUpdated(event);
+    }
 
-
-
+    public void testHandleOrderApproved(OrderApproved event) {
+        kafkaListenerService.testHandleOrderApproved(event);
+    }
 }
