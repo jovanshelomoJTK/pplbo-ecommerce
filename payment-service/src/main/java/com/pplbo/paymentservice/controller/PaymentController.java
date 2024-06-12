@@ -1,6 +1,7 @@
 package com.pplbo.paymentservice.controller;
 
 import com.pplbo.paymentservice.dto.PaymentRequestDTO;
+import com.pplbo.paymentservice.event.PaymentRequestEvent;
 import com.pplbo.paymentservice.model.Payment;
 import com.pplbo.paymentservice.model.PaymentMethod;
 import com.pplbo.paymentservice.service.PaymentMethodService;
@@ -12,6 +13,7 @@ import com.pplbo.paymentservice.jwt.customannotations.AllowedRoles;
 import com.pplbo.paymentservice.jwt.customannotations.UserDataFromToken;
 import com.pplbo.paymentservice.jwt.model.JwtUserData;
 import com.pplbo.paymentservice.jwt.model.JwtUserData.Role;
+import com.pplbo.paymentservice.kafka.KafkaProducerService;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +27,9 @@ public class PaymentController {
 
     @Autowired
     private PaymentMethodService paymentMethodService;
+
+    @Autowired
+    private KafkaProducerService kafkaProducerService;
 
     @AllowedRoles({ Role.CUSTOMER })
     @PostMapping
@@ -74,5 +79,11 @@ public class PaymentController {
         } else {
             return ResponseEntity.status(404).body("Payment not found.");
         }
+    }
+
+    @PostMapping("/test-payment-event")
+    public ResponseEntity<String> sendPaymentRequestEvent(@RequestBody PaymentRequestEvent paymentRequestEvent) {
+        kafkaProducerService.sendPaymentRequestEvent(paymentRequestEvent);
+        return ResponseEntity.ok("PaymentRequestEvent sent successfully.");
     }
 }
