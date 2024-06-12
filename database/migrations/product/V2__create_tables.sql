@@ -28,14 +28,17 @@ CREATE TABLE IF NOT EXISTS Product (
     categoryId INT NOT NULL,
     brandId INT NOT NULL,
     productDesc VARCHAR(255) NOT NULL,
-    productImage VARCHAR(255) NOT NULL
+    productImage VARCHAR(255) NOT NULL,
+    size VARCHAR(5) NOT NULL,
+    color VARCHAR(10) NOT NULL,
+    material VARCHAR(255) NOT NULL
 );
 
 -- Insert some initial data into the Product table
-INSERT INTO Product (productName, price, stock, categoryId, brandId, productDesc, productImage) 
-    VALUES ('Wardah Micellar Water', 30000, 75, 1, 1, 'Micellar pembersih dengan jutaan micelles pencerah yang membersihkan wajah dari make up, kotoran dan minyak berlebih dengan lembut.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQWNQYLb3QdcfRWCRbydQRMU9gBUK_-ZYAHw&s');
-INSERT INTO Product (productName, price, stock, categoryId, brandId, productDesc, productImage) 
-    VALUES ('Roma Malkist Kopyor', 7500, 100, 2, 2, 'Cemilan Enak dan Lezat Mengkonsumsi camilan alias ngemil sudah menjadi bagian dari gaya hidup masyarakat Indonesia.', 'https://www.static-src.com/wcsstore/Indraprastha/images/catalog/full//93/MTA-2650529/roma_roma-malkist-kelapa-kopyor-252-gram_full02.jpg');
+INSERT INTO Product (productName, price, stock, categoryId, brandId, productDesc, productImage, size, color, material) 
+    VALUES ('Wardah Micellar Water', 30000, 75, 1, 1, 'Micellar pembersih dengan jutaan micelles pencerah yang membersihkan wajah dari make up, kotoran dan minyak berlebih dengan lembut.', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQWNQYLb3QdcfRWCRbydQRMU9gBUK_-ZYAHw&s','S','White','Liquid');
+INSERT INTO Product (productName, price, stock, categoryId, brandId, productDesc, productImage, size, color, material) 
+    VALUES ('Roma Malkist Kopyor', 7500, 100, 2, 2, 'Cemilan Enak dan Lezat Mengkonsumsi camilan alias ngemil sudah menjadi bagian dari gaya hidup masyarakat Indonesia.', 'https://www.static-src.com/wcsstore/Indraprastha/images/catalog/full//93/MTA-2650529/roma_roma-malkist-kelapa-kopyor-252-gram_full02.jpg','M','Brown','Biscuit');
 
 -- Create table Review
 CREATE TABLE IF NOT EXISTS Review (

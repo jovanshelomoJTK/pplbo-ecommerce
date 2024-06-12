@@ -1,11 +1,12 @@
 package com.pplbo.productservice.controller;
 
-import java.util.Map;
-
 import com.pplbo.productservice.event.ValidateStockEvent;
 import com.pplbo.productservice.kafka.KafkaProducerService;
 import com.pplbo.productservice.model.Product;
+import com.pplbo.productservice.model.Category;
+import com.pplbo.productservice.service.CategoryService;
 import com.pplbo.productservice.service.ProductService;
+import com.pplbo.productservice.dto.CreateProductRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +24,9 @@ public class ProductController {
     @Autowired
     private KafkaProducerService kafkaProducerService;
 
+    @Autowired
+    CategoryService categoryService;
+
     @GetMapping("/")
     public List<Product> getAllProducts() {
         return productService.getAllProducts();
@@ -34,14 +38,40 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<Product> addProduct(@RequestBody Product product) {
+    public ResponseEntity<Product> addProduct(@RequestBody CreateProductRequest request) {
+        Product product = new Product();
+        product.setProductName(request.productName());
+        product.setPrice(request.price());
+        product.setStock(request.stock());
+        Category category = categoryService.getCategoryById(request.categoryId());
+        product.setCategory(category);
+        product.setBrandId(request.brandId().intValue());
+        product.setSize(request.size());
+        product.setColor(request.color());
+        product.setMaterial(request.material());
+        product.setProductDesc(request.productDesc());
+        product.setProductImage(request.productImage());
+
         Product createdProduct = productService.saveProduct(product);
         return ResponseEntity.ok(createdProduct);
     }
 
     @PatchMapping("/{productId}")
-    public ResponseEntity<Product> patchProduct(@PathVariable Long productId, @RequestBody Map<String, Object> updates) {
-        Product updatedProduct = productService.patchProduct(productId, updates);
+    public ResponseEntity<Product> patchProduct(@PathVariable Long productId, @RequestBody CreateProductRequest request) {
+        Product updates = new Product();
+        updates.setProductName(request.productName());
+        updates.setPrice(request.price());
+        updates.setStock(request.stock());
+        Category category = categoryService.getCategoryById(request.categoryId());
+        updates.setCategory(category);
+        updates.setBrandId(request.brandId().intValue());
+        updates.setSize(request.size());
+        updates.setColor(request.color());
+        updates.setMaterial(request.material());
+        updates.setProductDesc(request.productDesc());
+        updates.setProductImage(request.productImage());
+        Product updatedProduct = productService.patchProduct(productId, request);
+
         return ResponseEntity.ok(updatedProduct);
     }
 
@@ -56,10 +86,10 @@ public class ProductController {
         return productService.searchProductsByKeyword(keyword);
     }
 
-    @GetMapping("/product-category/{categoryId}")
-    public List<Product> getProductsByCategoryId(@PathVariable Integer categoryId) {
-        return productService.getProductsByCategoryId(categoryId);
-    }
+    // @GetMapping("/product-category/{categoryId}")
+    // public List<Product> getProductsByCategoryId(@PathVariable Integer categoryId) {
+    //     return productService.getProductsByCategoryId(categoryId);
+    // }
 
     @GetMapping("/check-stock/{productId}")
     public ResponseEntity<Void> checkStockAndNotify(@PathVariable Long productId) {

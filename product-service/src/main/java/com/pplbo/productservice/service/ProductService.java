@@ -11,11 +11,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.pplbo.productservice.event.ProductOutOfStockEvent;
+import com.pplbo.productservice.dto.CreateProductRequest;
 import com.pplbo.productservice.event.OrderNotValidatedEvent;
 import com.pplbo.productservice.event.OrderValidatedEvent;
 import com.pplbo.productservice.event.ValidateStockEvent;
 import com.pplbo.productservice.kafka.KafkaProducerService;
 import com.pplbo.productservice.model.Product;
+import com.pplbo.productservice.model.Category;
+import com.pplbo.productservice.repository.CategoryRepository;
 import com.pplbo.productservice.repository.ProductRepository;
 
 @Service
@@ -27,65 +30,79 @@ public class ProductService {
     @Autowired
     private KafkaProducerService kafkaProducerService;
 
+    @Autowired
+    private CategoryRepository categoryRepository;
+
     public List<Product> getAllProducts() {
-        return productRepository.findAll();
+        List<Product> products = productRepository.findAll();
+        products.forEach(product -> {
+            Long categoryId = product.getCategory() != null ? product.getCategory().getCategoryId() : null;
+            product.setCategory(categoryRepository.findById(categoryId).orElse(null));
+        });
+        return products;
     }
 
     public Product getProductById(Long productId) {
-        return productRepository.findByProductId(productId)
+        Product product = productRepository.findByProductId(productId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+        Long categoryId = product.getCategory() != null ? product.getCategory().getCategoryId() : null;
+        product.setCategory(categoryRepository.findById(categoryId).orElse(null));
+        return product;
     }
 
     public Product saveProduct(Product product) {
-        Optional<Product> existingProduct = productRepository.findByProductName(product.getProductName());
-        if (existingProduct.isPresent()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product already exists");
-        }
+        // Save the product
         return productRepository.save(product);
     }
 
-    public Product patchProduct(Long productId, Map<String, Object> updates) {
+    public List<Product> getProductsByCategory(Long categoryId) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found"));
+
+        return category.getProducts();
+    }
+
+    public Product patchProduct(Long productId, CreateProductRequest updates) {
         Product existingProduct = productRepository.findById(productId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
 
-        updates.forEach((key, value) -> {
-            if (value == null || (value instanceof String && ((String) value).isEmpty())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, key + " cannot be empty or null");
+        if (updates.productName() != null && !updates.productName().isEmpty()) {
+            // Check if the new product name already exists in another product
+            Optional<Product> productByName = productRepository.findByProductName(updates.productName());
+            if (productByName.isPresent() && !productByName.get().getProductId().equals(productId)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product with the same name already exists");
             }
-            switch (key) {
-                case "productName":
-                    String newProductName = (String) value;
-                    Optional<Product> productByName = productRepository.findByProductName(newProductName);
-                    if (productByName.isPresent() && !productByName.get().getProductId().equals(productId)) {
-                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product with the same name already exists");
-                    }
-                    existingProduct.setProductName(newProductName);
-                    break;
-                case "price":
-                    existingProduct.setPrice((Integer) value);
-                    break;
-                case "stock":
-                    Integer newStock = (Integer) value;
-                    existingProduct.setStock(newStock);
-                    break;
-                case "categoryId":
-                    existingProduct.setCategoryId((Integer) value);
-                    break;
-                case "brandId":
-                    existingProduct.setBrandId((Integer) value);
-                    break;
-                case "productDesc":
-                    existingProduct.setProductDesc((String) value);
-                    break;
-                case "productImage":
-                    existingProduct.setProductImage((String) value);
-                    break;
-                default:
-                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid field: " + key);
-            }
-        });
-
-        // Tidak ada pemanggilan event di sini
+            existingProduct.setProductName(updates.productName());
+        }
+        if (updates.price() != null) {
+            existingProduct.setPrice(updates.price());
+        }
+        if (updates.stock() != null) {
+            existingProduct.setStock(updates.stock());
+        }
+        if (updates.categoryId() != null) {
+            Category category = categoryRepository.findById(updates.categoryId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found"));
+            existingProduct.setCategory(category);
+        }
+        if (updates.brandId() != null) {
+            existingProduct.setBrandId(updates.brandId().intValue());
+        }
+        if (updates.size() != null) {
+            existingProduct.setSize(updates.size());
+        }
+        if (updates.color() != null) {
+            existingProduct.setColor(updates.color());
+        }
+        if (updates.material() != null) {
+            existingProduct.setMaterial(updates.material());
+        }
+        if (updates.productDesc() != null) {
+            existingProduct.setProductDesc(updates.productDesc());
+        }
+        if (updates.productImage() != null) {
+            existingProduct.setProductImage(updates.productImage());
+        }
 
         return productRepository.save(existingProduct);
     }
@@ -94,10 +111,6 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
         productRepository.delete(product);
-    }
-
-    public List<Product> getProductsByCategoryId(Integer categoryId) {
-        return productRepository.findByCategoryId(categoryId);
     }
 
     public List<Product> searchProductsByKeyword(String keyword) {
