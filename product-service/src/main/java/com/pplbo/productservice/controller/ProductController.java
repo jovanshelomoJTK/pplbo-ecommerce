@@ -50,4 +50,10 @@ public class ProductController {
     public List<Product> searchProducts(@PathVariable String keyword) {
         return productService.searchProductsByKeyword(keyword);
     }
+
+    @GetMapping("/product-category/{categoryId}")
+    public List<Product> getProductsByCategoryId(@PathVariable Integer categoryId) {
+        return productService.getProductsByCategoryId(categoryId);
+    }
+
 }

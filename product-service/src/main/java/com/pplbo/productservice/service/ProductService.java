@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.pplbo.productservice.event.ProductOutOfStockEvent;
+import com.pplbo.productservice.kafka.KafkaProducerService;
 import com.pplbo.productservice.model.Product;
 import com.pplbo.productservice.repository.ProductRepository;
 
@@ -17,6 +19,9 @@ public class ProductService {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private KafkaProducerService kafkaProducerService;
 
     public List<Product> getAllProducts() {
         return productRepository.findAll();
@@ -46,7 +51,6 @@ public class ProductService {
             switch (key) {
                 case "productName":
                     String newProductName = (String) value;
-                    // Check if the new product name already exists in another product
                     Optional<Product> productByName = productRepository.findByProductName(newProductName);
                     if (productByName.isPresent() && !productByName.get().getProductId().equals(productId)) {
                         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product with the same name already exists");
@@ -57,7 +61,8 @@ public class ProductService {
                     existingProduct.setPrice((Integer) value);
                     break;
                 case "stock":
-                    existingProduct.setStock((Integer) value);
+                    Integer newStock = (Integer) value;
+                    existingProduct.setStock(newStock);
                     break;
                 case "categoryId":
                     existingProduct.setCategoryId((Integer) value);
@@ -76,6 +81,15 @@ public class ProductService {
             }
         });
 
+        if (existingProduct.getStock() <= 0) {
+            ProductOutOfStockEvent event = new ProductOutOfStockEvent(
+                existingProduct.getProductId(),
+                existingProduct.getProductName(),
+                existingProduct.getStock()
+            );
+            kafkaProducerService.sendMessage(event);
+        }
+
         return productRepository.save(existingProduct);
     }
 
@@ -83,6 +97,10 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
         productRepository.delete(product);
+    }
+
+    public List<Product> getProductsByCategoryId(Integer categoryId) {
+        return productRepository.findByCategoryId(categoryId);
     }
 
     public List<Product> searchProductsByKeyword(String keyword) {
