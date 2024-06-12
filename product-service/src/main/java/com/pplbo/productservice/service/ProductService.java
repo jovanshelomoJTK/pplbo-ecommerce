@@ -81,14 +81,7 @@ public class ProductService {
             }
         });
 
-        if (existingProduct.getStock() <= 0) {
-            ProductOutOfStockEvent event = new ProductOutOfStockEvent(
-                existingProduct.getProductId(),
-                existingProduct.getProductName(),
-                existingProduct.getStock()
-            );
-            kafkaProducerService.sendMessage(event);
-        }
+        // Tidak ada pemanggilan event di sini
 
         return productRepository.save(existingProduct);
     }
@@ -109,5 +102,19 @@ public class ProductService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No products found with the given keyword");
         }
         return products;
+    }
+
+    // Metode baru untuk mengecek stok dan mengirim event jika stok habis saat cart service memanggil
+    public void checkStockAndNotify(Long productId) {
+        Product product = getProductById(productId);
+        if (product.getStock() <= 0) {
+            ProductOutOfStockEvent event = new ProductOutOfStockEvent(
+                product.getProductId(),
+                product.getProductName(),
+                product.getStock()
+            );
+            kafkaProducerService.sendMessage(event);
+            throw new ResponseStatusException(HttpStatus.OK, "Product is out of stock");
+        }
     }
 }

@@ -56,4 +56,9 @@ public class ProductController {
         return productService.getProductsByCategoryId(categoryId);
     }
 
+    @GetMapping("/check-stock/{productId}")
+    public ResponseEntity<Void> checkStockAndNotify(@PathVariable Long productId) {
+        productService.checkStockAndNotify(productId);
+        return ResponseEntity.ok().build();
+    }
 }
