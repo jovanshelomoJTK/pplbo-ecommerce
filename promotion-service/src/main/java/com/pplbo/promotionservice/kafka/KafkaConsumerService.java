@@ -7,6 +7,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 import com.pplbo.promotionservice.command.ValidateFreeShippingPromotion;
+import com.pplbo.promotionservice.command.OrderCreated;
 import com.pplbo.promotionservice.service.PromotionService;
 
 @Service
@@ -25,6 +26,12 @@ public class KafkaConsumerService {
             logger.info("Receive message: {}", command);
             // LOGIKA
         }
+    }
+
+    @KafkaListener(topics = "order-created")
+    public void listen(OrderCreated command) {
+        logger.info("Receive message: {}", command);
+        // LOGIKA
     }
 
 }
