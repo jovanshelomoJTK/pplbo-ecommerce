@@ -19,7 +19,7 @@ public class OrchestratorListener {
 
     @KafkaListener(topics = "orderReplyEvent", groupId = "group_id")
     public void handleReply(String message) {
-        // Tangani balasan dari service lain
+        // Handle reply from other service
         try {
             OrderCreateEvent event = objectMapper.readValue(message, OrderCreateEvent.class);
             orderService.handleReply(event);

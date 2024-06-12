@@ -40,10 +40,6 @@ public class OrderService {
 
     @Autowired
     private ObjectMapper objectMapper; // Define or Autowire the ObjectMapper
-    
-
-    // @Autowired
-    // private PaymentClient paymentClient;
 
     public List<OrderResponse> findAll() {
         return orderRepository.findAll().stream().map(this::convertToDto).collect(Collectors.toList());
@@ -79,7 +75,7 @@ public class OrderService {
 
     // @KafkaListener(topics = "orderReply", groupId = "group_id")
     public void handleReply(OrderCreateEvent event) {
-        if(event.getOrder().orderStatus().equals("PESANAN_DIBUAT")){
+        if(event.getOrder().orderStatus().equals("ORDER_CREATED")){
             try {
                 ObjectMapper objectMapper = new ObjectMapper();
                 String message = objectMapper.writeValueAsString(event);
@@ -88,14 +84,13 @@ public class OrderService {
                 e.printStackTrace();
             }
         }
-        System.out.println("TEST HALO ADA GA : " + event.getOrder());        
+        System.out.println("EVENT: " + event.getOrder());        
     }
 
     public void deleteById(Long id) {
         orderRepository.deleteById(id);
     }
 
-    //olah Response
     private OrderResponse convertToDto(Order order) {
         List<OrderLineItemResponse> orderLineItems = order.getOrderLineItems().stream()
             .map(item -> new OrderLineItemResponse(item.getOrderLineItemId(), item.getQuantity(), item.getProductId()))
@@ -129,7 +124,6 @@ public class OrderService {
         );
     }
 
-    //olah Request
     private Order convertToEntity(OrderRequest orderRequest) {
         List<OrderLineItem> orderLineItems = orderRequest.orderLineItems().stream()
             .map(item -> new OrderLineItem(null, item.quantity(), item.productId(), null))
