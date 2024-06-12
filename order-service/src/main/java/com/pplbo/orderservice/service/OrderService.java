@@ -18,7 +18,6 @@ import com.pplbo.orderservice.model.OrderLineItem;
 import com.pplbo.orderservice.model.Shipping;
 import com.pplbo.orderservice.model.Customer;
 import com.pplbo.orderservice.repository.OrderRepository;
-// import com.pplbo.orderservice.client.PaymentClient;
 import com.pplbo.orderservice.event.OrderCreateEvent;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -50,17 +49,9 @@ public class OrderService {
     }
 
     public OrderResponse save(OrderRequest orderRequest) {
-        // Boolean isPaymentReqExist = paymentClient.isPaymentExist(orderRequest.paymentId());
 
         Order order = convertToEntity(orderRequest);
         return convertToDto(orderRepository.save(order));
-
-        // if (isPaymentReqExist) {
-        //     Order order = convertToEntity(orderRequest);
-        //     return convertToDto(orderRepository.save(order));
-        // } else {
-        //     throw new RuntimeException("Payment request does not exist");
-        // }
     }
 
     public void createEventOrder(OrderCreateEvent event) {
