@@ -2,6 +2,8 @@ package com.pplbo.productservice.controller;
 
 import java.util.Map;
 
+import com.pplbo.productservice.event.ValidateStockEvent;
+import com.pplbo.productservice.kafka.KafkaProducerService;
 import com.pplbo.productservice.model.Product;
 import com.pplbo.productservice.service.ProductService;
 
@@ -17,6 +19,9 @@ public class ProductController {
 
     @Autowired
     ProductService productService;
+
+    @Autowired
+    private KafkaProducerService kafkaProducerService;
 
     @GetMapping("/")
     public List<Product> getAllProducts() {
@@ -60,5 +65,13 @@ public class ProductController {
     public ResponseEntity<Void> checkStockAndNotify(@PathVariable Long productId) {
         productService.checkStockAndNotify(productId);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/testkafka/{id}")
+    public String testKafka(@PathVariable Long id, @RequestParam int quantity) {
+        ValidateStockEvent event = new ValidateStockEvent(id, quantity);
+        kafkaProducerService.sendValidateStockEvent(event);
+        productService.consumeValidateStockEvent(event);
+        return "Kafka event sent and processed successfully";
     }
 }

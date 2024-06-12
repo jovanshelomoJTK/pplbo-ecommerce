@@ -6,10 +6,14 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.pplbo.productservice.event.ProductOutOfStockEvent;
+import com.pplbo.productservice.event.OrderNotValidatedEvent;
+import com.pplbo.productservice.event.OrderValidatedEvent;
+import com.pplbo.productservice.event.ValidateStockEvent;
 import com.pplbo.productservice.kafka.KafkaProducerService;
 import com.pplbo.productservice.model.Product;
 import com.pplbo.productservice.repository.ProductRepository;
@@ -115,6 +119,20 @@ public class ProductService {
             );
             kafkaProducerService.sendMessage(event);
             throw new ResponseStatusException(HttpStatus.OK, "Product is out of stock");
+        }
+    }
+
+    @KafkaListener(topics = "ValidateStockEvent", groupId = "product_group")
+    public void consumeValidateStockEvent(ValidateStockEvent event) {
+        Product product = productRepository.findById(event.getProductId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found"));
+
+        if (product.getStock() >= event.getQuantity()) {
+            product.setStock(product.getStock() - event.getQuantity());
+            productRepository.save(product);
+            kafkaProducerService.sendOrderValidatedEvent(new OrderValidatedEvent(event.getProductId(), event.getQuantity()));
+        } else {
+            kafkaProducerService.sendOrderNotValidatedEvent(new OrderNotValidatedEvent(event.getProductId(), event.getQuantity()));
         }
     }
 }

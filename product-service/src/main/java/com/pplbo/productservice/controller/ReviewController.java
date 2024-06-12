@@ -1,5 +1,6 @@
 package com.pplbo.productservice.controller;
 
+import com.pplbo.productservice.dto.CreateReviewRequest;
 import com.pplbo.productservice.model.Review;
 import com.pplbo.productservice.service.ReviewService;
 
@@ -33,9 +34,17 @@ public class ReviewController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<Review> addReview(@RequestBody Review review) {
-        Review addReview = reviewService.addReview(review);
-        return ResponseEntity.ok(addReview);
+    public ResponseEntity<Review> addReview(@RequestBody CreateReviewRequest request) {
+        Review review = new Review();
+        review.setProductId(request.productId());
+        review.setReview(request.review());
+        review.setRecommendationReview(request.recommendationReview());
+        review.setRating(request.rating());
+        review.setReviewMedia(request.reviewMedia());
+        review.setReviewDate(request.reviewDate());
+
+        Review addedReview = reviewService.addReview(review);
+        return ResponseEntity.ok(addedReview);
     }
     
     @DeleteMapping("/{id}")
