@@ -6,37 +6,30 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
-@Table(name = "test")
+@Table(name = "payment_method")
 @Entity
-public class Test {
+public class PaymentMethod {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
+    private String method;
 
-    public Test() {
-    }
-
-    public Test(Long id, String name) {
-        this.id = id;
-        this.name = name;
-    }
+    // Getters and Setters
 
     public Long getId() {
         return id;
-    }
-
-    public String getName() {
-        return name;
     }
 
     public void setId(Long id) {
         this.id = id;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public String getMethod() {
+        return method;
     }
 
+    public void setMethod(String method) {
+        this.method = method;
+    }
 }
