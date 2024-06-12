@@ -29,18 +29,16 @@ public class OrderController {
         return orderService.getAllOrder();
     }
 
+    @GetMapping("order/{orderId}")
+    public Order getOrderById(Long orderId) {
+        return orderService.getOrderById(orderId);
+    }
+
     @PostMapping("/order")
     public Order createOrder(@RequestBody CreateOrderRequest createOrderRequest) {
         return orderService
                 .createOrder(new OrderDetails(createOrderRequest.getCustomerId(), createOrderRequest.getOrderTotal(),
-                        createOrderRequest.getShippingAddress()));
-        // createOrderRequest.getOrderItems()));
-
-        // return orderSagaService.createOrder(new
-        // OrderDetails(createOrderRequest.getCustomerId(),
-        // createOrderRequest.getOrderTotal(),
-        // createOrderRequest.getShippingAddress()));
-        // // createOrderRequest.getOrderItems();
-
+                        createOrderRequest.getShippingAddress(), createOrderRequest.getOrderItems()));
     }
+
 }

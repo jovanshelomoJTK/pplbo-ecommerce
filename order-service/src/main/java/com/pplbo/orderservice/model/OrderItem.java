@@ -33,4 +33,13 @@ public class OrderItem {
     private Integer quantity;
 
     private Double price;
+
+    public OrderItem() {
+    }
+
+    public OrderItem(Integer productId, Integer quantity, Double price) {
+        this.productId = productId;
+        this.quantity = quantity;
+        this.price = price;
+    }
 }

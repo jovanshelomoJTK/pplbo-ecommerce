@@ -23,7 +23,5 @@ public class OrderDetails {
 
     private String shippingAddress;
     
-    // @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
-    // @JsonManagedReference
-    // private Set<OrderItem> orderItems;
+    private Set<OrderItem> orderItems;
 }

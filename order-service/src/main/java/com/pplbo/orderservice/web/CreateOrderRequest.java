@@ -18,5 +18,5 @@ public class CreateOrderRequest {
 
     private String shippingAddress;
     
-    // private Set<OrderItem> orderItems;
+    private Set<OrderItem> orderItems;
 }

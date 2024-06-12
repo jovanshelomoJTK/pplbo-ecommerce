@@ -9,23 +9,31 @@ import com.pplbo.orderservice.common.OrderDetails;
 import com.pplbo.orderservice.model.Order;
 import com.pplbo.orderservice.repository.OrderRepository;
 
+import com.pplbo.orderservice.kafka.KafkaProducerService;
+import com.pplbo.orderservice.event.OrderCreated;
+
 @Service
 public class OrderService {
 
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private KafkaProducerService kafkaProducerService;
+
     public List<Order> getAllOrder() {
         return orderRepository.findAll();
     }
 
+    public Order getOrderById(Long orderId) {
+        return orderRepository.findById(orderId).get();
+    }
+
     public Order createOrder(OrderDetails orderDetails) {
-        // OrderCreatedEvent orderCreatedEvent = new OrderCreatedEvent(order,
-        // order.getOrderStatus());
-        // kafkaTemplate.send("order-topic", orderCreatedEvent);
-        System.out.println("Order created event sent");
         Order order = Order.createOrder(orderDetails);
-        return orderRepository.save(order);
+        orderRepository.save(order);
+        kafkaProducerService.sendMessage("order-created", new OrderCreated(order.getOrderId(), order));
+        return order;
     }
 
     public void approveOrder(Long orderId) {
