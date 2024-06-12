@@ -8,6 +8,10 @@ import com.pplbo.paymentservice.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.pplbo.paymentservice.jwt.customannotations.AllowedRoles;
+import com.pplbo.paymentservice.jwt.customannotations.UserDataFromToken;
+import com.pplbo.paymentservice.jwt.model.JwtUserData;
+import com.pplbo.paymentservice.jwt.model.JwtUserData.Role;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,9 +26,13 @@ public class PaymentController {
     @Autowired
     private PaymentMethodService paymentMethodService;
 
+    @AllowedRoles({ Role.CUSTOMER })
     @PostMapping
-    public ResponseEntity<Payment> createPayment(@RequestBody PaymentRequestDTO paymentRequestDTO) {
-        Payment createdPayment = paymentService.createPayment(paymentRequestDTO);
+    public ResponseEntity<Payment> createPayment(
+            @RequestBody PaymentRequestDTO paymentRequestDTO, 
+            @UserDataFromToken JwtUserData userData) {
+        // Set customer_id from JWT token
+        Payment createdPayment = paymentService.createPayment(Long.parseLong(userData.getId()), paymentRequestDTO);
         return ResponseEntity.ok(createdPayment);
     }
 

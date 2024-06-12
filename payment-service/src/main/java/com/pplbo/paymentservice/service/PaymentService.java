@@ -23,9 +23,9 @@ public class PaymentService {
     @Autowired
     private KafkaProducerService kafkaProducerService;
 
-    public Payment createPayment(PaymentRequestDTO paymentRequestDTO) {
+    public Payment createPayment(Long customerId, PaymentRequestDTO paymentRequestDTO) {
         Payment payment = new Payment();
-        payment.setCustomerId(paymentRequestDTO.getCustomerId());
+        payment.setCustomerId(customerId);
         payment.setOrderId(paymentRequestDTO.getOrderId());
         payment.setStatus("PENDING");
         payment.setTotalPrice(paymentRequestDTO.getTotalPrice());
@@ -70,21 +70,6 @@ public class PaymentService {
             return false;
         }
     }
-
-    // public void processPayment(OrderCreatedEvent event) {
-    //     PaymentRequestDTO paymentRequestDTO = new PaymentRequestDTO();
-    //     paymentRequestDTO.setCustomerId(event.getCustomerId()); 
-    //     paymentRequestDTO.setOrderId(event.getOrderId());
-        
-    //     Payment payment = createPayment(paymentRequestDTO);
-
-    //     payment.setStatus("PAID");
-    //     paymentRepository.save(payment);
-
-    //     // Publish event to notify that payment status has been updated
-    //     PaymentStatusUpdatedEvent paymentStatusUpdatedEvent = new PaymentStatusUpdatedEvent(event.getOrderId(), "PAID");
-    //     kafkaProducerService.sendPaymentStatusUpdateEvent(paymentStatusUpdatedEvent);
-    // }
 
     public void processPayment(PaymentRequestEvent event) {
         Payment payment = new Payment();
