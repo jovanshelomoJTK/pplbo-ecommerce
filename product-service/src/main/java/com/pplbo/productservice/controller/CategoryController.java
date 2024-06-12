@@ -1,22 +1,25 @@
 package com.pplbo.productservice.controller;
 
+import com.pplbo.productservice.dto.CreateCategoryRequest;
 import com.pplbo.productservice.model.Category;
-import com.pplbo.productservice.service.CategoryService; 
+import com.pplbo.productservice.service.CategoryService;
 
-import java.util.List; 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;  // Add this import
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*; 
+import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 
 @RestController
-@RequestMapping("category")
+@RequestMapping("/category")
 public class CategoryController {
 
     @Autowired
-    CategoryService categoryService;
+    private CategoryService categoryService;
 
     @GetMapping("/")
     public List<Category> getAllCategories() {
@@ -29,15 +32,29 @@ public class CategoryController {
     }
 
     @PostMapping
-    public ResponseEntity<Category> addCategory(@Valid @RequestBody Category category) {
-        Category createdCategory = categoryService.saveCategory(category);
-        return ResponseEntity.ok(createdCategory);
+    public ResponseEntity<?> addCategory(@RequestBody CreateCategoryRequest request) {
+        try {
+            Category category = new Category();
+            category.setCategoryName(request.categoryName());
+            Category createdCategory = categoryService.saveCategory(category);
+            return new ResponseEntity<>(createdCategory, HttpStatus.CREATED);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>("Failed to add category: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to add category: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @PatchMapping("/{categoryId}")
-    public ResponseEntity<Category> patchCategory(@PathVariable Long categoryId, @RequestBody Map<String, Object> updates) {
-        Category updatedCategory = categoryService.patchCategory(categoryId, updates);
-        return ResponseEntity.ok(updatedCategory);
+    public ResponseEntity<?> patchCategory(@PathVariable Long categoryId, @RequestBody Map<String, Object> updates) {
+        try {
+            Category updatedCategory = categoryService.patchCategory(categoryId, updates);
+            return ResponseEntity.ok(updatedCategory);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>("Failed to update category: " + e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to update category: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @DeleteMapping("/{categoryId}")

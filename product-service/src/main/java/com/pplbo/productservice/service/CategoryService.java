@@ -1,15 +1,13 @@
 package com.pplbo.productservice.service;
 
-import java.util.List; 
-import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import com.pplbo.productservice.model.Category;
 import com.pplbo.productservice.repository.CategoryRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class CategoryService {
@@ -23,41 +21,32 @@ public class CategoryService {
 
     public Category getCategoryById(Long categoryId) {
         return categoryRepository.findById(categoryId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
     }
 
     public Category saveCategory(Category category) {
-        if (category.getCategoryName() == null || category.getCategoryName().trim().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Category name is mandatory");
-        }
-        if (categoryRepository.existsByCategoryName(category.getCategoryName())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Category name already exists");
-        }
         return categoryRepository.save(category);
     }
 
     public Category patchCategory(Long categoryId, Map<String, Object> updates) {
-        Category existingCategory = categoryRepository.findById(categoryId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found"));
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
 
-        if (updates.containsKey("categoryName")) {
-            String newCategoryName = (String) updates.get("categoryName");
-            if (categoryRepository.existsByCategoryName(newCategoryName)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Category name already exists");
+        updates.forEach((key, value) -> {
+            if (key.equals("categoryName")) {
+                category.setCategoryName((String) value);
             }
-            existingCategory.setCategoryName(newCategoryName);
-        } else {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid field: " + updates.keySet().toString());
-        }
+        });
 
-        return categoryRepository.save(existingCategory);
+        return categoryRepository.save(category);
     }
 
     public Map<String, Boolean> deleteCategory(Long categoryId) {
-        Category existingCategory = categoryRepository.findById(categoryId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Category not found"));
-    
-        categoryRepository.delete(existingCategory);
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+
+        categoryRepository.delete(category);
+
         return Map.of("deleted", Boolean.TRUE);
-    }    
+    }
 }
